@@ -2,6 +2,7 @@
 
 Thin JDBC wrapper for Kotlin
 
-* Kotlin-friendly API
+* Kotlin-friendly
+* Fluent API
 * Named parameter support
-* Provide some useful utilities
+* List spreading

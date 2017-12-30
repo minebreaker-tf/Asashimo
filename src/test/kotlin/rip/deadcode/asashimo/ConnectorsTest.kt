@@ -23,7 +23,7 @@ class ConnectorsTest {
 
     data class User(val id: Int, val name: String)
 
-    val userMapper = { rs: ResultSet -> User(rs.getInt("id"), rs.getString("name")) }
+    private val userMapper = { rs: ResultSet -> User(rs.getInt("id"), rs.getString("name")) }
 
     @Test
     fun genericTest1() {
