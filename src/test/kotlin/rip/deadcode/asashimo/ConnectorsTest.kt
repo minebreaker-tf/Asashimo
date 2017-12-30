@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.truth.Truth.assertThat
 import org.h2.jdbcx.JdbcDataSource
+import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -20,6 +21,12 @@ class ConnectorsTest {
             password = ""
         }
         connector = Connectors.newInstance(dataSource)
+    }
+
+    @After
+    fun tearDown() {
+        // コネクションごとにデータベースを閉じない設定にしているため、手動でクローズしてDBをリセットする
+        connector?.exec("shutdown")
     }
 
     data class User(val id: Int, val name: String)
