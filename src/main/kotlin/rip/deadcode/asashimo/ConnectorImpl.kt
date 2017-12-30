@@ -43,16 +43,18 @@ internal class ConnectorImpl(private val dataSource: DataSource) : Connector {
                 throw AsashimoException("Transaction is not available.")
             }
             conn.autoCommit = false
-            return block(UseClauseImpl(conn))
+            val result = block(UseClauseImpl(conn))
+            conn.commit()
+            return result
         } catch (e: Exception) {
             try {
                 conn.rollback()
-                throw AsashimoException("Exception in transaction.", e)
             } catch (ex: Exception) {
                 val message = "Failed to rollback."
                 logger.warn(message)
                 throw AsashimoException(message, ex)
             }
+            throw AsashimoException("Exception in transaction.", e)
         } finally {
             try {
                 conn.close()

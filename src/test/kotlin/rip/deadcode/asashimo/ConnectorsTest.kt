@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.truth.Truth.assertThat
 import org.h2.jdbcx.JdbcDataSource
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import java.sql.ResultSet
@@ -46,6 +47,48 @@ class ConnectorsTest {
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest3() {
+        try {
+            connector!!.transactional {
+                exec("create table user(id int, name varchar)")
+                exec("insert into user values(1, 'John')")
+                val user = fetch("select * from user", User::class, userMapper)
+
+                assertThat(user.id).isEqualTo(1)
+                assertThat(user.name).isEqualTo("John")
+
+                throw RuntimeException()
+            }
+        } catch (e: AsashimoException) {
+
+            val count = connector!!.fetch("select count(*) from user", Int::class, { rs -> rs.getInt(1) })
+            assertThat(count).isEqualTo(0)
+            return
+        }
+
+        @Suppress("UNREACHABLE_CODE")
+        fail()
+    }
+
+    @Test
+    fun genericTest4() {
+        val user = connector!!.transactional {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+            fetch("select * from user", User::class, userMapper)
+        }
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+
+        connector!!.exec("rollback")
+
+        // Assure "rollback" had no effect
+        val user2 = connector!!.fetch("select * from user", User::class, userMapper)
+        assertThat(user2.id).isEqualTo(1)
+        assertThat(user2.name).isEqualTo("John")
     }
 
 }

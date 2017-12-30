@@ -20,7 +20,7 @@ object Runner {
         check(result)
 
         val rs = stmt.resultSet
-        checkState(rs.next())  // Assure successful
+        checkState(rs.next(), "No Result")  // Assure successful
         return resultMapper?.invoke(rs) ?: GeneralResultMapper.map(cls, rs)
     }
 
