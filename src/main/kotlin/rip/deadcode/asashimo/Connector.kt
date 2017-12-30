@@ -1,23 +1,21 @@
 package rip.deadcode.asashimo
 
+import java.sql.ResultSet
 import kotlin.reflect.KClass
 
 interface Connector {
 
-    //    fun with(parameters:Map<String, SQLValue>): WithClause
-    fun with(dsl: WithDsl): WithClause
+    fun with(dsl: WithDsl): WithInterface
+    fun with(dsl: Map<String, Any>): WithInterface
 
-    fun <T> fetch(sql: String, cls: Class<T>): T
-    fun <T : Any> fetch(sql: String, cls: KClass<T>): T
+    fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: (ResultSet) -> T): T
 
-    fun <T> fetchAll(sql: String, cls: Class<T>): List<T>
+    fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: (ResultSet) -> T): List<T>
 
-}
+    fun exec(sql: String): Int
 
-interface WithClause {
-
-}
-
-interface WithDsl {
+    fun <T> use(block: UseClause.() -> T): T
+    fun <T> transactional(block: UseClause.() -> T): T
 
 }
+
