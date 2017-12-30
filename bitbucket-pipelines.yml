@@ -1,0 +1,10 @@
+image: java:8
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - gradle
+        script:
+          - chmod 777 gradlew
+          - ./gradlew build
