@@ -33,31 +33,31 @@ object GeneralResultMapper {
             @Suppress("IMPLICIT_CAST_TO_ANY")
             return when (cls) {
             // Directly provided by JDBC driver
-                java.sql.Array::class -> resultSet.getArray(1)
-                BigDecimal::class -> resultSet.getBigDecimal(1)
-                InputStream::class -> resultSet.getBinaryStream(1)
-                Blob::class -> resultSet.getBlob(1)
-                Boolean::class -> resultSet.getBoolean(1)
-                Byte::class -> resultSet.getByte(1)
-                ByteArray::class -> resultSet.getBytes(1)
-                Reader::class -> resultSet.getCharacterStream(1)
-                Clob::class -> resultSet.getClob(1)
-                java.sql.Date::class -> resultSet.getDate(1)
-                Double::class -> resultSet.getDouble(1)
-                Float::class -> resultSet.getFloat(1)
-                Int::class -> resultSet.getInt(1)
-                Long::class -> resultSet.getLong(1)
-                Short::class -> resultSet.getShort(1)
-                SQLXML::class -> resultSet.getSQLXML(1)
-                String::class -> resultSet.getString(1)
-                Time::class -> resultSet.getTime(1)
-                Timestamp::class -> resultSet.getTimestamp(1)
-                URL::class -> resultSet.getURL(1)
+                java.sql.Array::class -> resultSet.getArray(1) as T
+                BigDecimal::class -> resultSet.getBigDecimal(1) as T
+                InputStream::class -> resultSet.getBinaryStream(1) as T
+                Blob::class -> resultSet.getBlob(1) as T
+                Boolean::class -> resultSet.getBoolean(1) as T
+                Byte::class -> resultSet.getByte(1) as T
+                ByteArray::class -> resultSet.getBytes(1) as T
+                Reader::class -> resultSet.getCharacterStream(1) as T
+                Clob::class -> resultSet.getClob(1) as T
+                java.sql.Date::class -> resultSet.getDate(1) as T
+                Double::class -> resultSet.getDouble(1) as T
+                Float::class -> resultSet.getFloat(1) as T
+                Int::class -> resultSet.getInt(1) as T
+                Long::class -> resultSet.getLong(1) as T
+                Short::class -> resultSet.getShort(1) as T
+                SQLXML::class -> resultSet.getSQLXML(1) as T
+                String::class -> resultSet.getString(1) as T
+                Time::class -> resultSet.getTime(1) as T
+                Timestamp::class -> resultSet.getTimestamp(1) as T
+                URL::class -> resultSet.getURL(1) as T
 
             // Manual conversion
-                BigInteger::class -> resultSet.getBigDecimal(1).toBigInteger()
+                BigInteger::class -> resultSet.getBigDecimal(1).toBigInteger() as T
                 else -> null
-            } as T
+            }
         } catch (e: Exception) {
             when (e) {
                 is SQLException -> throw e
