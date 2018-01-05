@@ -6,13 +6,14 @@ import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
+// TODO ここで例外処理
 object Runner {
 
     fun <T : Any> fetch(
             conn: Connection,
             sql: String,
             cls: KClass<T>,
-            params: Map<String, SqlParameter> = mapOf(),
+            params: Map<String, Any> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): T {
 
         val stmt = StatementGenerator.create(conn, sql, params)
@@ -28,7 +29,7 @@ object Runner {
             conn: Connection,
             sql: String,
             cls: KClass<T>,
-            params: Map<String, SqlParameter> = mapOf(),
+            params: Map<String, Any> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): List<T> {
 
         val stmt = StatementGenerator.create(conn, sql, params)
@@ -50,7 +51,7 @@ object Runner {
     fun exec(
             conn: Connection,
             sql: String,
-            params: Map<String, SqlParameter> = mapOf()): Int {
+            params: Map<String, Any> = mapOf()): Int {
 
         val stmt = StatementGenerator.create(conn, sql, params)
         return stmt.executeUpdate()
