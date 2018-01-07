@@ -24,6 +24,36 @@ object GeneralResultMapper {
                 ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
     }
 
+    private fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>): Any? {
+        return when (type) {
+        // Directly provided by JDBC driver
+            java.sql.Array::class -> getArray(i)
+            BigDecimal::class -> getBigDecimal(i)
+            InputStream::class -> getBinaryStream(i)
+            Blob::class -> getBlob(i)
+            Boolean::class -> getBoolean(i)
+            Byte::class -> getByte(i)
+            ByteArray::class -> getBytes(i)
+            Reader::class -> getCharacterStream(i)
+            Clob::class -> getClob(i)
+            java.sql.Date::class -> getDate(i)
+            Double::class -> getDouble(i)
+            Float::class -> getFloat(i)
+            Int::class -> getInt(i)
+            Long::class -> getLong(i)
+            Short::class -> getShort(i)
+            SQLXML::class -> getSQLXML(i)
+            String::class -> getString(i)
+            Time::class -> getTime(i)
+            Timestamp::class -> getTimestamp(i)
+            URL::class -> getURL(i)
+
+        // Manual conversion
+            BigInteger::class -> getBigDecimal(i).toBigInteger()
+            else -> null
+        }
+    }
+
     /**
      * JDBC型が要求されていた場合、対応するメソッドを使用して値を取得する.
      */
@@ -31,33 +61,7 @@ object GeneralResultMapper {
     internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet): T? {
         return try {
             @Suppress("IMPLICIT_CAST_TO_ANY")
-            return when (cls) {
-            // Directly provided by JDBC driver
-                java.sql.Array::class -> resultSet.getArray(1) as T
-                BigDecimal::class -> resultSet.getBigDecimal(1) as T
-                InputStream::class -> resultSet.getBinaryStream(1) as T
-                Blob::class -> resultSet.getBlob(1) as T
-                Boolean::class -> resultSet.getBoolean(1) as T
-                Byte::class -> resultSet.getByte(1) as T
-                ByteArray::class -> resultSet.getBytes(1) as T
-                Reader::class -> resultSet.getCharacterStream(1) as T
-                Clob::class -> resultSet.getClob(1) as T
-                java.sql.Date::class -> resultSet.getDate(1) as T
-                Double::class -> resultSet.getDouble(1) as T
-                Float::class -> resultSet.getFloat(1) as T
-                Int::class -> resultSet.getInt(1) as T
-                Long::class -> resultSet.getLong(1) as T
-                Short::class -> resultSet.getShort(1) as T
-                SQLXML::class -> resultSet.getSQLXML(1) as T
-                String::class -> resultSet.getString(1) as T
-                Time::class -> resultSet.getTime(1) as T
-                Timestamp::class -> resultSet.getTimestamp(1) as T
-                URL::class -> resultSet.getURL(1) as T
-
-            // Manual conversion
-                BigInteger::class -> resultSet.getBigDecimal(1).toBigInteger() as T
-                else -> null
-            }
+            return resultSet.getUnknown(1, cls) as T
         } catch (e: Exception) {
             when (e) {
                 is SQLException -> throw e
@@ -84,12 +88,7 @@ object GeneralResultMapper {
                     val types = constructor.parameterTypes
                     val args = arrayOfNulls<Any>(types.size)
                     for ((i, type) in types.withIndex()) {
-                        when (type) {
-                            Int::class.java -> args[i] = resultSet.getInt(i + 1)
-                            String::class.java -> args[i] = resultSet.getString(i + 1)
-                            // TODO other types
-                            else -> args[i] = resultSet.getObject(i + 1, type)
-                        }
+                        args[i] = resultSet.getUnknown<Any>(i + 1, type.kotlin) ?: resultSet.getObject(i + 1, type)
                     }
                     if (!constructor.isAccessible) constructor.isAccessible = true
                     return constructor.newInstance(*args) as T
