@@ -97,6 +97,8 @@ object StatementGenerator {
         return when {
             string.startsWith(",") -> LexResult(",", string.substring(1))
             string.startsWith(";") -> LexResult(";", string.substring(1))
+            string.startsWith("(") -> LexResult("(", string.substring(1))
+            string.startsWith(")") -> LexResult(")", string.substring(1))
             else -> null
         }
     }
@@ -121,7 +123,9 @@ object StatementGenerator {
     }
 
     private fun lexOther(string: String): LexResult {
-        val nextTokenIndex = string.indexOfFirst { it.isWhitespace() || it == ',' || it == ';' }
+        val nextTokenIndex = string.indexOfFirst {
+            it.isWhitespace() || it == ',' || it == ';' || it == '(' || it == ')'
+        }
         return if (nextTokenIndex >= 0) {
             LexResult(string.substring(0, nextTokenIndex), string.substring(nextTokenIndex))
         } else {

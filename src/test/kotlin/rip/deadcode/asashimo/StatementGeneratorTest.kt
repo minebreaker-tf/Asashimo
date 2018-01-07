@@ -53,6 +53,12 @@ from
     }
 
     @Test
+    fun testLex5() {
+        val result = StatementGenerator.lex("insert into user values(:id, 'John')")
+        assertThat(result).isEqualTo(listOf("insert", "into", "user", "values", "(", ":id", ",", "'John'", ")"))
+    }
+
+    @Test
     fun test1() {
         val conn = mock(Connection::class.java)
         val stmt = mock(PreparedStatement::class.java)
@@ -68,6 +74,7 @@ from
         verify(conn).prepareStatement("select id , name from user where id = ? and password = ?")
         verify(stmt).setInt(1, 123)
         verify(stmt).setString(2, "Robert'); DROP TABLE Students;--")
+        verifyNoMoreInteractions(conn, stmt)
     }
 
     @Test(expected = IllegalStateException::class)

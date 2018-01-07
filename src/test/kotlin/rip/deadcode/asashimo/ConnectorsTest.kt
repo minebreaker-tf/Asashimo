@@ -139,7 +139,7 @@ class ConnectorsTest {
                 .with(mapOf("id" to 1, "name" to "John"))
                 .use {
                     exec("create table user(id int, name varchar)")
-                    exec("insert into user values(1, 'John')")
+                    exec("insert into user values(:id, 'John')")
                     fetch("select * from user where name = :name", User::class)
                 }
 
