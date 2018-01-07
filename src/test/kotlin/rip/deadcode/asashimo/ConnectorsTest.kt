@@ -34,6 +34,12 @@ class ConnectorsTest {
     private val userMapper = { rs: ResultSet -> User(rs.getInt("id"), rs.getString("name")) }
 
     @Test
+    fun hello() {
+        val message = connector!!.fetch("select 'hello, world' from dual", String::class)
+        assertThat(message).isEqualTo("hello, world")
+    }
+
+    @Test
     fun genericTest1() {
         connector!!.exec("create table user(id int, name varchar)")
         connector!!.exec("insert into user values(1, 'John')")
@@ -71,7 +77,7 @@ class ConnectorsTest {
             }
         } catch (e: AsashimoException) {
 
-            val count = connector!!.fetch("select count(*) from user", Int::class, { rs -> rs.getInt(1) })
+            val count = connector!!.fetch("select count(*) from user", Int::class)
             assertThat(count).isEqualTo(0)
             return
         }

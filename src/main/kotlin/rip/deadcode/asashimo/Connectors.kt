@@ -5,4 +5,3 @@ import javax.sql.DataSource
 object Connectors {
     fun newInstance(dataSource: DataSource): Connector = ConnectorImpl(dataSource)
 }
-
