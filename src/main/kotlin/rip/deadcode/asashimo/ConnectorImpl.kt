@@ -18,9 +18,11 @@ internal class ConnectorImpl(private val dataSource: DataSource) : Connector {
         return use { exec(sql) }
     }
 
-//    override fun with(dsl: WithDsl): WithClause {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//    }
+    override fun with(block: (MutableMap<String, Any>) -> Unit): WithClause {
+        val params = mutableMapOf<String, Any>()
+        block(params)
+        return WithClauseImpl(getConnection(), params)
+    }
 
     override fun with(params: Map<String, Any>): WithClause {
         return WithClauseImpl(getConnection(), params)
