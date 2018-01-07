@@ -24,32 +24,33 @@ object GeneralResultMapper {
                 ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
     }
 
-    private fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>): Any? {
+    private fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>): T? {
+        @Suppress("IMPLICIT_CAST_TO_ANY")
         return when (type) {
         // Directly provided by JDBC driver
-            java.sql.Array::class -> getArray(i)
-            BigDecimal::class -> getBigDecimal(i)
-            InputStream::class -> getBinaryStream(i)
-            Blob::class -> getBlob(i)
-            Boolean::class -> getBoolean(i)
-            Byte::class -> getByte(i)
-            ByteArray::class -> getBytes(i)
-            Reader::class -> getCharacterStream(i)
-            Clob::class -> getClob(i)
-            java.sql.Date::class -> getDate(i)
-            Double::class -> getDouble(i)
-            Float::class -> getFloat(i)
-            Int::class -> getInt(i)
-            Long::class -> getLong(i)
-            Short::class -> getShort(i)
-            SQLXML::class -> getSQLXML(i)
-            String::class -> getString(i)
-            Time::class -> getTime(i)
-            Timestamp::class -> getTimestamp(i)
-            URL::class -> getURL(i)
+            java.sql.Array::class -> getArray(i) as T
+            BigDecimal::class -> getBigDecimal(i) as T
+            InputStream::class -> getBinaryStream(i) as T
+            Blob::class -> getBlob(i) as T
+            Boolean::class -> getBoolean(i) as T
+            Byte::class -> getByte(i) as T
+            ByteArray::class -> getBytes(i) as T
+            Reader::class -> getCharacterStream(i) as T
+            Clob::class -> getClob(i) as T
+            java.sql.Date::class -> getDate(i) as T
+            Double::class -> getDouble(i) as T
+            Float::class -> getFloat(i) as T
+            Int::class -> getInt(i) as T
+            Long::class -> getLong(i) as T
+            Short::class -> getShort(i) as T
+            SQLXML::class -> getSQLXML(i) as T
+            String::class -> getString(i) as T
+            Time::class -> getTime(i) as T
+            Timestamp::class -> getTimestamp(i) as T
+            URL::class -> getURL(i) as T
 
         // Manual conversion
-            BigInteger::class -> getBigDecimal(i).toBigInteger()
+            BigInteger::class -> getBigDecimal(i).toBigInteger() as T
             else -> null
         }
     }
@@ -60,8 +61,7 @@ object GeneralResultMapper {
     @VisibleForTesting
     internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet): T? {
         return try {
-            @Suppress("IMPLICIT_CAST_TO_ANY")
-            return resultSet.getUnknown(1, cls) as T
+            return resultSet.getUnknown(1, cls)
         } catch (e: Exception) {
             when (e) {
                 is SQLException -> throw e

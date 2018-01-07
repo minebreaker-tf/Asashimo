@@ -20,14 +20,23 @@ object StatementGenerator {
         checkState(!tokens.contains("?"), "Use named parameter instead of positional parameter.")
 
         var resultTokens = listOf<String>()
-        var paramsToSet = listOf<Any>()
+        var paramsToSet = listOf<Any?>()
         for (token in tokens) {
             var found = false
             for ((key, value) in params) {
                 if (token == ":" + key) {
                     found = true
-                    resultTokens += "?"
-                    paramsToSet += value
+                    if (value is Collection<*>) {
+                        // Spread collection
+                        for ((i, eachValue) in value.withIndex()) {
+                            resultTokens += "?"
+                            if (i + 1 < value.size) resultTokens += ","
+                            paramsToSet += eachValue
+                        }
+                    } else {
+                        resultTokens += "?"
+                        paramsToSet += value
+                    }
                     break
                 }
             }
@@ -61,6 +70,7 @@ object StatementGenerator {
 
             // Manual conversion
                 is BigInteger -> stmt.setBigDecimal(i + 1, param.toBigDecimal())
+
                 else -> stmt.setObject(i + 1, param)
             }
         }

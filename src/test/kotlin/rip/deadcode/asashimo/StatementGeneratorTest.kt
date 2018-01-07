@@ -83,4 +83,24 @@ from
         StatementGenerator.create(conn, "select * from user where id = ?", params = mapOf("id" to 123))
     }
 
+    @Test
+    fun test3() {
+        val conn = mock(Connection::class.java)
+        val stmt = mock(PreparedStatement::class.java)
+        `when`(conn.prepareStatement(any())).thenReturn(stmt)
+
+        val result = StatementGenerator.create(
+                conn,
+                "select id, name from user where id in (:ids)",
+                mapOf("ids" to listOf(123, 456, 789)))
+
+        assertThat(result === stmt).isTrue()
+
+        verify(conn).prepareStatement("select id , name from user where id in ( ? , ? , ? )")
+        verify(stmt).setInt(1, 123)
+        verify(stmt).setInt(2, 456)
+        verify(stmt).setInt(3, 789)
+        verifyNoMoreInteractions(conn, stmt)
+    }
+
 }

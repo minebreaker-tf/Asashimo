@@ -174,4 +174,38 @@ class ConnectorsTest {
         assertThat(user.name).isEqualTo("John")
     }
 
+    @Test
+    fun genericTest11() {
+        val user = connector!!.with {
+            it["id"] = 1
+            it["name"] = "John"
+        }.transactional {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(:id, 'John')")
+            fetch("select * from user where name = :name", User::class)
+        }
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest12() {
+        val user = connector!!.with {
+            it["ids"] = listOf(2, 3)
+        }.use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+            exec("insert into user values(2, 'Jack')")
+            exec("insert into user values(3, 'Jane')")
+            fetchAll("select * from user where id in (:ids)", User::class)
+        }
+
+        assertThat(user).hasSize(2)
+        assertThat(user[0].id).isEqualTo(2)
+        assertThat(user[0].name).isEqualTo("Jack")
+        assertThat(user[1].id).isEqualTo(3)
+        assertThat(user[1].name).isEqualTo("Jane")
+    }
+
 }
