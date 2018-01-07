@@ -84,7 +84,12 @@ object GeneralResultMapper {
                     val types = constructor.parameterTypes
                     val args = arrayOfNulls<Any>(types.size)
                     for ((i, type) in types.withIndex()) {
-                        args[i] = resultSet.getObject(i + 1, type)
+                        when (type) {
+                            Int::class.java -> args[i] = resultSet.getInt(i + 1)
+                            String::class.java -> args[i] = resultSet.getString(i + 1)
+                            // TODO other types
+                            else -> args[i] = resultSet.getObject(i + 1, type)
+                        }
                     }
                     if (!constructor.isAccessible) constructor.isAccessible = true
                     return constructor.newInstance(*args) as T

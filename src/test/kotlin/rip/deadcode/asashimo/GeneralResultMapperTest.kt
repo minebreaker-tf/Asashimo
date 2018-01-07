@@ -35,8 +35,8 @@ class GeneralResultMapperTest {
         val meta = mock(ResultSetMetaData::class.java)
         `when`(meta.columnCount).thenReturn(2)
         `when`(rs.metaData).thenReturn(meta)
-        `when`(rs.getObject(1, Int::class.java)).thenReturn(123)
-        `when`(rs.getObject(2, String::class.java)).thenReturn("John")
+        `when`(rs.getInt(1)).thenReturn(123)
+        `when`(rs.getString(2)).thenReturn("John")
         val res = GeneralResultMapper.convertWithAllArgsConstructor(User1::class, rs)!!
 
         assertThat(res.id).isEqualTo(123)
