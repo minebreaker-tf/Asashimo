@@ -98,4 +98,53 @@ class ConnectorsTest {
         assertThat(user2.name).isEqualTo("John")
     }
 
+    @Test
+    fun genericTest5() {
+        connector!!.exec("create table user(id int, name varchar)")
+        connector!!.exec("insert into user values(1, 'John')")
+        val user = connector!!.fetch(
+                "select * from user", User::class)
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest6() {
+        val user = connector!!.use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+            fetch("select * from user", User::class)
+        }
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest7() {
+        connector!!.exec("create table user(id int, name varchar)")
+        connector!!.exec("insert into user values(1, 'John')")
+        val user = connector!!
+                .with(mapOf("id" to 1))
+                .fetch("select * from user where id = :id", User::class)
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest8() {
+        val user = connector!!
+                .with(mapOf("id" to 1, "name" to "John"))
+                .use {
+                    exec("create table user(id int, name varchar)")
+                    exec("insert into user values(1, 'John')")
+                    fetch("select * from user where name = :name", User::class)
+                }
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
 }
