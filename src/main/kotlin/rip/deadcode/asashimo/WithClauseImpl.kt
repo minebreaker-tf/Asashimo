@@ -9,7 +9,7 @@ import java.sql.ResultSet
 import java.util.function.Supplier
 import kotlin.reflect.KClass
 
-class WithClauseImpl(
+internal class WithClauseImpl(
         private val conn: Connection,
         private val connectionResetCallback: () -> Unit,
         private val params: Map<String, Any>,

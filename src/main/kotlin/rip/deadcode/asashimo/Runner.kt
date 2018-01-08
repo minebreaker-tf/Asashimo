@@ -6,7 +6,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
-object Runner {
+internal object Runner {
 
     fun <T : Any> fetch(
             conn: Connection,

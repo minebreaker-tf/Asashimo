@@ -10,7 +10,7 @@ import java.math.BigInteger
 import java.net.URL
 import java.sql.*
 
-object StatementGenerator {
+internal object StatementGenerator {
 
     private val logger = LoggerFactory.getLogger(StatementGenerator::class.java)
 
