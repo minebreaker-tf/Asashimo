@@ -32,5 +32,11 @@ interface WithClause {
     fun execLargeAsync(sql: String, executorService: ListeningExecutorService? = null): ListenableFuture<Long>
 
     fun <T> use(block: UseClause.() -> T): T
+    fun <T> useLazy(block: UseClause.() -> T): Supplier<T>
+    fun <T> useAsync(executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
+
     fun <T> transactional(block: UseClause.() -> T): T
+    fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T>
+    fun <T> transactionalAsync(
+            executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
 }

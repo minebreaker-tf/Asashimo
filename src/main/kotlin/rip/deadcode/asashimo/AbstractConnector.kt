@@ -80,8 +80,30 @@ internal abstract class AbstractConnector(
         return WithClauseImpl(getConnection(), ::resetDataSourceCallback, mapOf(), defaultExecutor).use(block)
     }
 
+    override fun <T> useLazy(block: UseClause.() -> T): Supplier<T> {
+        return Supplier { use(block) }
+    }
+
+    override fun <T> useAsync(
+            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+        return (executorService ?: defaultExecutor).submit<T> {
+            use(block)
+        }
+    }
+
     override fun <T> transactional(block: UseClause.() -> T): T {
         return WithClauseImpl(getConnection(), ::resetDataSourceCallback, mapOf(), defaultExecutor).transactional(block)
+    }
+
+    override fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T> {
+        return Supplier { transactional(block) }
+    }
+
+    override fun <T> transactionalAsync(
+            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+        return (executorService ?: defaultExecutor).submit<T> {
+            transactional(block)
+        }
     }
 
     protected abstract fun getConnection(): Connection

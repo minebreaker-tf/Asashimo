@@ -122,7 +122,7 @@ Don't forget braces are mandatory.
 * API for Java
 * Savepoint
 * Batch
-* Lazy / Async `use`
+* Configurable executor for async API
 * Map API (fetch values with map interface)
 * Documentation
 * More tests

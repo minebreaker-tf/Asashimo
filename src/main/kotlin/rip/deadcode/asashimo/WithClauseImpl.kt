@@ -82,6 +82,17 @@ class WithClauseImpl(
         }
     }
 
+    override fun <T> useLazy(block: UseClause.() -> T): Supplier<T> {
+        return Supplier { use(block) }
+    }
+
+    override fun <T> useAsync(
+            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+        return (executorService ?: defaultExecutor).submit<T> {
+            use(block)
+        }
+    }
+
     override fun <T> transactional(block: UseClause.() -> T): T {
         try {
             if (conn.transactionIsolation == Connection.TRANSACTION_NONE) {
@@ -109,6 +120,17 @@ class WithClauseImpl(
                 logger.warn(message)
                 throw AsashimoException(message, e)
             }
+        }
+    }
+
+    override fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T> {
+        return Supplier { transactional(block) }
+    }
+
+    override fun <T> transactionalAsync(
+            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+        return (executorService ?: defaultExecutor).submit<T> {
+            transactional(block)
         }
     }
 

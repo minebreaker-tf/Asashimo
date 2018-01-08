@@ -253,4 +253,17 @@ class ConnectorsTest {
         assertThat(user.name).isEqualTo("John")
     }
 
+    @Test
+    fun genericTest16() {
+        val userFuture = connector!!.useAsync {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+            fetch("select * from user", User::class)
+        }
+        val user = userFuture.get()
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
 }
