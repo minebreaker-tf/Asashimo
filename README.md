@@ -119,7 +119,6 @@ Don't forget braces are mandatory.
 
 * Make some behaviors configurable
 * Java 8 Date and Time API
-* DataSourceFactory
 * API for Java
 * Savepoint
 * Batch
