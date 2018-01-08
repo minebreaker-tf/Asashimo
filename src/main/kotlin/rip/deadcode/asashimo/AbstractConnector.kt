@@ -2,14 +2,9 @@ package rip.deadcode.asashimo
 
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.sql.DataSource
 import kotlin.reflect.KClass
 
-internal class ConnectorImpl(private val dataSourceFactory: () -> DataSource) : Connector {
-
-    private var dataSource = dataSourceFactory()
-    private val resetDataSource = AtomicBoolean(false)
+internal abstract class AbstractConnector : Connector {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         return use { fetch(sql, cls, resultMapper) }
@@ -41,18 +36,10 @@ internal class ConnectorImpl(private val dataSourceFactory: () -> DataSource) : 
         return WithClauseImpl(getConnection(), ::resetDataSourceCallback, mapOf()).transactional(block)
     }
 
-    private fun resetDataSourceCallback() {
-        resetDataSource.set(true)
-    }
+    protected abstract fun getConnection(): Connection
 
-    private fun getConnection(): Connection {
-        synchronized(dataSource) {
-            if (resetDataSource.get()) {
-                dataSource = dataSourceFactory()
-                resetDataSource.set(false)
-            }
-            return dataSource.connection
-        }
+    protected open fun resetDataSourceCallback() {
+        // Do nothing
     }
 
 }

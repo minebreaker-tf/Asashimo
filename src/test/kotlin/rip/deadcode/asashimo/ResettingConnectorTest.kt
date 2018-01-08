@@ -10,10 +10,10 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import javax.sql.DataSource
 
-class ConnectorImplTest {
+class ResettingConnectorTest {
 
     @Test
-    fun testDataSourceFactory() {
+    fun testDataSourceFactory1() {
 
         val dataSource = mock(DataSource::class.java)
         val conn = mock(Connection::class.java)
@@ -21,10 +21,10 @@ class ConnectorImplTest {
         `when`(conn.prepareStatement(any())).thenReturn(mock(PreparedStatement::class.java))
 
         var timesDataSourceCreated = 0
-        val connector = Connectors.newInstance {
+        val connector = Connectors.newInstance({
             timesDataSourceCreated++
             dataSource
-        }
+        })
 
         assertThat(timesDataSourceCreated).isEqualTo(1)
 
@@ -57,4 +57,33 @@ class ConnectorImplTest {
         assertThat(timesDataSourceCreated).isEqualTo(3)
     }
 
+    @Test
+    fun testDataSourceFactory2() {
+
+        val dataSource = mock(DataSource::class.java)
+        val conn = mock(Connection::class.java)
+        `when`(dataSource.connection).thenReturn(conn)
+        `when`(conn.prepareStatement(any())).thenReturn(mock(PreparedStatement::class.java))
+
+        var timesDataSourceCreated = 0
+        val connector = Connectors.newInstance({
+            timesDataSourceCreated++
+            dataSource
+        }, AsashimoConfig(resetDataSourceWhenExceptionOccurred = false))
+
+        assertThat(timesDataSourceCreated).isEqualTo(1)
+
+        try {
+            connector.use {
+                throw RuntimeException()
+            }
+            @Suppress("UNREACHABLE_CODE")
+            fail()
+        } catch (e: AsashimoException) {
+        }
+
+        assertThat(timesDataSourceCreated).isEqualTo(1)
+        connector.exec("")
+        assertThat(timesDataSourceCreated).isEqualTo(1)
+    }
 }
