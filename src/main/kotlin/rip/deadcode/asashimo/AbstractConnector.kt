@@ -19,7 +19,7 @@ internal abstract class AbstractConnector : Connector {
         return Supplier { use { fetch(sql, cls, resultMapper) } }
     }
 
-    override fun <T : Any> fetchLazyAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<List<T>> {
+    override fun <T : Any> fetchAllLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<List<T>> {
         return Supplier { use { fetchAll(sql, cls, resultMapper) } }
     }
 
