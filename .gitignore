@@ -3,3 +3,4 @@
 build/
 sample.md
 out/
+gradle.properties
