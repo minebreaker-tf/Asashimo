@@ -5,6 +5,7 @@ import org.h2.jdbcx.JdbcDataSource
 import org.junit.After
 import org.junit.Assert.fail
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import java.sql.ResultSet
 
@@ -212,6 +213,18 @@ class ConnectorsTest {
         assertThat(user[0].name).isEqualTo("Jack")
         assertThat(user[1].id).isEqualTo(3)
         assertThat(user[1].name).isEqualTo("Jane")
+    }
+
+    /**
+     * H2 doesn't support `largeUpdate()`.
+     */
+    @Ignore
+    @Test
+    fun genericTest13() {
+        connector!!.exec("create table user(id int, name varchar)")
+        val n: Long = connector!!.execLarge("insert into user values(1, 'John')")
+
+        assertThat(n).isEqualTo(1)
     }
 
 }

@@ -18,6 +18,10 @@ internal abstract class AbstractConnector : Connector {
         return use { exec(sql) }
     }
 
+    override fun execLarge(sql: String): Long {
+        return use { execLarge(sql) }
+    }
+
     override fun with(block: (MutableMap<String, Any>) -> Unit): WithClause {
         val params = mutableMapOf<String, Any>()
         block(params)

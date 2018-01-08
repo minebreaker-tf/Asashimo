@@ -36,4 +36,13 @@ internal class UseClauseImpl(
         }
     }
 
+    override fun execLarge(sql: String): Long {
+        try {
+            return Runner.execLarge(connection, sql, params = params)
+        } catch (e: Exception) {
+            connectionResetCallback()
+            throw e
+        }
+    }
+
 }

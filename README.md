@@ -122,7 +122,7 @@ Don't forget braces are mandatory.
 * DataSourceFactory
 * API for Java
 * Savepoint
-* Batch / largeUpdate
+* Batch
 * Lazy API / Async API
 * Map API (fetch values with map interface)
 * Documentation

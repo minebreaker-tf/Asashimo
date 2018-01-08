@@ -23,6 +23,10 @@ class WithClauseImpl(
         return use { Runner.exec(conn, sql, params) }
     }
 
+    override fun execLarge(sql: String): Long {
+        return use { Runner.execLarge(conn, sql, params) }
+    }
+
     override fun <T> use(block: UseClause.() -> T): T {
         try {
             conn.autoCommit = true

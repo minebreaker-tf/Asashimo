@@ -57,4 +57,13 @@ object Runner {
         return stmt.executeUpdate()
     }
 
+    fun execLarge(
+            conn: Connection,
+            sql: String,
+            params: Map<String, Any> = mapOf()): Long {
+
+        val stmt = StatementGenerator.create(conn, sql, params)
+        return stmt.executeLargeUpdate()
+    }
+
 }
