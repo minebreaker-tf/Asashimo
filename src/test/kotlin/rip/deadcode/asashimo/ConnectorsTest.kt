@@ -11,7 +11,7 @@ import java.sql.ResultSet
 
 class ConnectorsTest {
 
-    var connector: Connector? = null
+    private var connector: Connector? = null
 
     @Before
     fun setUp() {
@@ -234,6 +234,20 @@ class ConnectorsTest {
             exec("insert into user values(1, 'John')")
         }
         val user = connector!!.fetchLazy("select * from user", User::class).get()
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest15() {
+        connector!!.use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+        }
+
+        val userFuture = connector!!.fetchAsync("select * from user", User::class)
+        val user = userFuture.get()
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")

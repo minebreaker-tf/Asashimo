@@ -7,6 +7,7 @@ Thin JDBC wrapper for Kotlin
 * Plain SQL rather than DSL
 * Named parameter support
 * List spreading
+* Async API with Google Guava `ListenableFuture`
 
 ```kotlin
 fun sample(dataSource: javax.sql.DataSource) {
@@ -121,8 +122,7 @@ Don't forget braces are mandatory.
 * API for Java
 * Savepoint
 * Batch
-* Async API
-* Lazy `use`
+* Lazy / Async `use`
 * Map API (fetch values with map interface)
 * Documentation
 * More tests

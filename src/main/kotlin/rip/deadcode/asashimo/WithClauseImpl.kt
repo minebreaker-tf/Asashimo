@@ -1,5 +1,7 @@
 package rip.deadcode.asashimo
 
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.ListeningExecutorService
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 import java.sql.Connection
@@ -10,7 +12,8 @@ import kotlin.reflect.KClass
 class WithClauseImpl(
         private val conn: Connection,
         private val connectionResetCallback: () -> Unit,
-        private val params: Map<String, Any>) : WithClause {
+        private val params: Map<String, Any>,
+        private val defaultExecutor: ListeningExecutorService) : WithClause {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         return use { Runner.fetch(conn, sql, cls, resultMapper = resultMapper, params = params) }
@@ -29,12 +32,36 @@ class WithClauseImpl(
         return Supplier { fetchAll(sql, cls, resultMapper) }
     }
 
+    override fun <T : Any> fetchAsync(
+            sql: String,
+            cls: KClass<T>,
+            resultMapper: ((ResultSet) -> T)?,
+            executorService: ListeningExecutorService?): ListenableFuture<T> {
+        return (executorService ?: defaultExecutor).submit<T> { fetch(sql, cls, resultMapper) }
+    }
+
+    override fun <T : Any> fetchAllAsync(
+            sql: String,
+            cls: KClass<T>,
+            resultMapper: ((ResultSet) -> T)?,
+            executorService: ListeningExecutorService?): ListenableFuture<List<T>> {
+        return (executorService ?: defaultExecutor).submit<List<T>> { fetchAll(sql, cls, resultMapper) }
+    }
+
     override fun exec(sql: String): Int {
         return use { Runner.exec(conn, sql, params) }
     }
 
     override fun execLarge(sql: String): Long {
         return use { Runner.execLarge(conn, sql, params) }
+    }
+
+    override fun execAsync(sql: String, executorService: ListeningExecutorService?): ListenableFuture<Int> {
+        return (executorService ?: defaultExecutor).submit<Int> { exec(sql) }
+    }
+
+    override fun execLargeAsync(sql: String, executorService: ListeningExecutorService?): ListenableFuture<Long> {
+        return (executorService ?: defaultExecutor).submit<Long> { execLarge(sql) }
     }
 
     override fun <T> use(block: UseClause.() -> T): T {

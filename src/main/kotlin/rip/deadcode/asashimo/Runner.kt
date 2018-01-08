@@ -6,7 +6,6 @@ import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
-// TODO ここで例外処理
 object Runner {
 
     fun <T : Any> fetch(
