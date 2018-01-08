@@ -1,6 +1,7 @@
 package rip.deadcode.asashimo
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.util.concurrent.MoreExecutors
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.After
 import org.junit.Assert.fail
@@ -255,11 +256,13 @@ class ConnectorsTest {
 
     @Test
     fun genericTest16() {
-        val userFuture = connector!!.useAsync {
-            exec("create table user(id int, name varchar)")
-            exec("insert into user values(1, 'John')")
-            fetch("select * from user", User::class)
-        }
+        val userFuture = connector!!
+                .with(mapOf("id" to 1))
+                .useAsync(MoreExecutors.newDirectExecutorService()) {
+                    exec("create table user(id int, name varchar)")
+                    exec("insert into user values(1, 'John')")
+                    fetch("select * from user where id = :id", User::class)
+                }
         val user = userFuture.get()
 
         assertThat(user.id).isEqualTo(1)

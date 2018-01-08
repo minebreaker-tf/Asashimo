@@ -116,6 +116,29 @@ val users = connector.with {
 Don't forget braces are mandatory.
 
 
+#### Async API
+
+Asashimo provides async API with `ListenableFuture` of
+[Google Guava](https://github.com/google/guava).
+
+[ListenableFutureExplained](https://github.com/google/guava/wiki/ListenableFutureExplained)
+
+```kotlin
+val userFuture: ListenableFuture<User> = connector
+        .with(mapOf("id" to 1))
+        .useAsync(MoreExecutors.newDirectExecutorService()) {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+            fetch("select * from user where id = :id", User::class)
+        }
+```
+
+If `ListeningExecutorService` in arguments is omitted,
+the default executor pooled by Asashimo is used.
+
+(This will be configurable in the future versions)
+
+
 ## TODOs
 
 * Java 8 Date and Time API
