@@ -19,6 +19,20 @@ fun sample(dataSource: javax.sql.DataSource) {
 [https://bitbucket.org/minebreaker_tf/asashimo](https://bitbucket.org/minebreaker_tf/asashimo)
 
 
+## Gradle
+
+```groovy
+repositories {
+    maven {
+        url  "https://dl.bintray.com/minebreaker/test"
+    }
+}
+dependencies {
+    compile 'rip.deadcode:asashimo:0.1'
+}
+```
+
+
 ## How to use
 
 *See `rip.deadcode.asashimo.ConnectorsTest` for more samples*
