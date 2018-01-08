@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
+import com.google.errorprone.annotations.CanIgnoreReturnValue
 import java.sql.ResultSet
 import java.util.function.Supplier
 import kotlin.reflect.KClass
@@ -30,16 +31,20 @@ interface Connector {
             executorService: ListeningExecutorService? = null
     ): ListenableFuture<List<T>>
 
+    @CanIgnoreReturnValue
     fun exec(sql: String): Int
+    @CanIgnoreReturnValue
     fun execLarge(sql: String): Long
 
     fun execAsync(sql: String, executorService: ListeningExecutorService? = null): ListenableFuture<Int>
     fun execLargeAsync(sql: String, executorService: ListeningExecutorService? = null): ListenableFuture<Long>
 
+    @CanIgnoreReturnValue
     fun <T> use(block: UseClause.() -> T): T
     fun <T> useLazy(block: UseClause.() -> T): Supplier<T>
     fun <T> useAsync(executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
 
+    @CanIgnoreReturnValue
     fun <T> transactional(block: UseClause.() -> T): T
     fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T>
     fun <T> transactionalAsync(executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
