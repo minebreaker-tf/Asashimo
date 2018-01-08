@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import java.sql.Connection
 import java.sql.ResultSet
+import java.util.function.Supplier
 import kotlin.reflect.KClass
 
 internal abstract class AbstractConnector : Connector {
@@ -12,6 +13,14 @@ internal abstract class AbstractConnector : Connector {
 
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
         return use { fetchAll(sql, cls, resultMapper) }
+    }
+
+    override fun <T : Any> fetchLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<T> {
+        return Supplier { use { fetch(sql, cls, resultMapper) } }
+    }
+
+    override fun <T : Any> fetchLazyAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<List<T>> {
+        return Supplier { use { fetchAll(sql, cls, resultMapper) } }
     }
 
     override fun exec(sql: String): Int {

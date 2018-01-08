@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import java.sql.Connection
 import java.sql.ResultSet
+import java.util.function.Supplier
 import kotlin.reflect.KClass
 
 internal class UseClauseImpl(
@@ -25,6 +26,15 @@ internal class UseClauseImpl(
             connectionResetCallback()
             throw e
         }
+    }
+
+    override fun <T : Any> fetchLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<T> {
+        return Supplier { fetch(sql, cls, resultMapper) }
+    }
+
+    override fun <T : Any> fetchAllLazy(
+            sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<List<T>> {
+        return Supplier { fetchAll(sql, cls, resultMapper) }
     }
 
     override fun exec(sql: String): Int {

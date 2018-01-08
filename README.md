@@ -117,12 +117,12 @@ Don't forget braces are mandatory.
 
 ## TODOs
 
-* Make some behaviors configurable
 * Java 8 Date and Time API
 * API for Java
 * Savepoint
 * Batch
-* Lazy API / Async API
+* Async API
+* Lazy `use`
 * Map API (fetch values with map interface)
 * Documentation
 * More tests

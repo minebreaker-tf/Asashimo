@@ -227,4 +227,16 @@ class ConnectorsTest {
         assertThat(n).isEqualTo(1)
     }
 
+    @Test
+    fun genericTest14() {
+        connector!!.use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+        }
+        val user = connector!!.fetchLazy("select * from user", User::class).get()
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
 }

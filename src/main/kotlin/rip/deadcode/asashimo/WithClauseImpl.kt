@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import java.lang.Exception
 import java.sql.Connection
 import java.sql.ResultSet
+import java.util.function.Supplier
 import kotlin.reflect.KClass
 
 class WithClauseImpl(
@@ -17,6 +18,15 @@ class WithClauseImpl(
 
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
         return use { Runner.fetchAll(conn, sql, cls, resultMapper = resultMapper, params = params) }
+    }
+
+    override fun <T : Any> fetchLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<T> {
+        return Supplier { fetch(sql, cls, resultMapper) }
+    }
+
+    override fun <T : Any> fetchAllLazy(
+            sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<List<T>> {
+        return Supplier { fetchAll(sql, cls, resultMapper) }
     }
 
     override fun exec(sql: String): Int {
