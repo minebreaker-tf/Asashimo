@@ -6,18 +6,34 @@ import kotlin.reflect.KClass
 
 internal class UseClauseImpl(
         private val connection: Connection,
+        private val connectionResetCallback: () -> Unit,
         private val params: Map<String, Any> = mapOf()) : UseClause {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
-        return Runner.fetch(connection, sql, cls, resultMapper = resultMapper, params = params)
+        try {
+            return Runner.fetch(connection, sql, cls, resultMapper = resultMapper, params = params)
+        } catch (e: Exception) {
+            connectionResetCallback()
+            throw e
+        }
     }
 
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
-        return Runner.fetchAll(connection, sql, cls, resultMapper = resultMapper, params = params)
+        try {
+            return Runner.fetchAll(connection, sql, cls, resultMapper = resultMapper, params = params)
+        } catch (e: Exception) {
+            connectionResetCallback()
+            throw e
+        }
     }
 
     override fun exec(sql: String): Int {
-        return Runner.exec(connection, sql, params = params)
+        try {
+            return Runner.exec(connection, sql, params = params)
+        } catch (e: Exception) {
+            connectionResetCallback()
+            throw e
+        }
     }
 
 }

@@ -6,7 +6,10 @@ import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
-class WithClauseImpl(private val conn: Connection, private val params: Map<String, Any>) : WithClause {
+class WithClauseImpl(
+        private val conn: Connection,
+        private val connectionResetCallback: () -> Unit,
+        private val params: Map<String, Any>) : WithClause {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         return use { Runner.fetch(conn, sql, cls, resultMapper = resultMapper, params = params) }
@@ -21,9 +24,20 @@ class WithClauseImpl(private val conn: Connection, private val params: Map<Strin
     }
 
     override fun <T> use(block: UseClause.() -> T): T {
-        return conn.use {
-            it.autoCommit = true
-            block(UseClauseImpl(it, params))
+        try {
+            conn.autoCommit = true
+            return UseClauseImpl(conn, connectionResetCallback, params).block()
+        } catch (e: Exception) {
+            connectionResetCallback()
+            throw AsashimoException("Exception in use method.", e)
+        } finally {
+            try {
+                conn.close()
+            } catch (e: Exception) {
+                val message = "Failed to close connection."
+                logger.warn(message)
+                throw AsashimoException(message, e)
+            }
         }
     }
 
@@ -33,10 +47,11 @@ class WithClauseImpl(private val conn: Connection, private val params: Map<Strin
                 throw AsashimoException("Transaction is not available.")
             }
             conn.autoCommit = false
-            val result = UseClauseImpl(conn, params).block()
+            val result = UseClauseImpl(conn, connectionResetCallback, params).block()
             conn.commit()
             return result
         } catch (e: Exception) {
+            connectionResetCallback()
             try {
                 conn.rollback()
             } catch (ex: Exception) {
