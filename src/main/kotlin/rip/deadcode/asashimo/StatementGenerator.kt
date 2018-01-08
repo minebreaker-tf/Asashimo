@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions.checkState
+import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.io.Reader
 import java.math.BigDecimal
@@ -10,6 +11,8 @@ import java.net.URL
 import java.sql.*
 
 object StatementGenerator {
+
+    private val logger = LoggerFactory.getLogger(StatementGenerator::class.java)
 
     fun create(conn: Connection, sql: String, params: Map<String, Any>): PreparedStatement {
         if (params.isEmpty()) return conn.prepareStatement(sql)
@@ -44,6 +47,7 @@ object StatementGenerator {
         }
 
         val sqlToExec = resultTokens.joinToString(separator = " ")
+        logger.debug("SQL: {}", sqlToExec)
         val stmt = conn.prepareStatement(sqlToExec)
         for ((i, param) in paramsToSet.withIndex()) {
             when (param) {
@@ -78,6 +82,7 @@ object StatementGenerator {
         return stmt
     }
 
+    @VisibleForTesting
     internal data class LexResult(
             val token: String?,
             val rest: String?

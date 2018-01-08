@@ -51,7 +51,10 @@ object GeneralResultMapper {
 
         // Manual conversion
             BigInteger::class -> getBigDecimal(i).toBigInteger() as T
-            else -> null
+            else -> {
+                logger.trace("Could not found corresponding basic type.")
+                null
+            }
         }
     }
 
@@ -96,7 +99,7 @@ object GeneralResultMapper {
                     // Just ignore an exception and try next constructor
                     when (e) {
                         is SQLException -> throw e
-                        else -> logger.trace("", e)
+                        else -> logger.trace("Failed to instantiate",  e)
                     }
                 }
             }
@@ -107,7 +110,7 @@ object GeneralResultMapper {
             when (e) {
                 is SQLException -> throw e
                 else -> {
-                    logger.trace("", e)
+                    logger.trace("Failed to instantiate using all constructors.", e)
                     null
                 }
             }
@@ -138,7 +141,7 @@ object GeneralResultMapper {
             when (e) {
                 is SQLException -> throw e
                 else -> {
-                    logger.info("", e)
+                    logger.info("Failed during invoking setters.", e)
                     null
                 }
             }
