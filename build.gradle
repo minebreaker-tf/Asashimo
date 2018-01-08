@@ -48,8 +48,8 @@ compileTestKotlin {
 }
 
 bintray {
-    user = BINTRAY_USER
-    key = BINTRAY_KEY
+    user = project.hasProperty('BINTRAY_USER') ? BINTRAY_USER : ''
+    key = project.hasProperty('BINTRAY_KEY') ? BINTRAY_KEY : ''
     pkg {
         repo = 'test'
         name = 'asashimo'
