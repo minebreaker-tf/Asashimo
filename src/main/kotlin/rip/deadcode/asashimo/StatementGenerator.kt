@@ -3,18 +3,20 @@ package rip.deadcode.asashimo
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions.checkState
 import org.slf4j.LoggerFactory
+import rip.deadcode.asashimo.Java8DateConversionStrategy.*
 import java.io.InputStream
 import java.io.Reader
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URL
 import java.sql.*
+import java.time.*
 
 internal object StatementGenerator {
 
     private val logger = LoggerFactory.getLogger(StatementGenerator::class.java)
 
-    fun create(conn: Connection, sql: String, params: Map<String, Any>): PreparedStatement {
+    fun create(conn: Connection, config: AsashimoConfig, sql: String, params: Map<String, Any>): PreparedStatement {
         if (params.isEmpty()) return conn.prepareStatement(sql)
 
         // TODO refactoring for better readability and performance
@@ -75,7 +77,41 @@ internal object StatementGenerator {
             // Manual conversion
                 is BigInteger -> stmt.setBigDecimal(i + 1, param.toBigDecimal())
 
-                else -> stmt.setObject(i + 1, param)
+                else -> {
+                    when (config.java8dateConversionStrategy) {
+                        RAW -> stmt.setObject(i + 1, param)
+                        CONVERT -> {
+                            stmt.setObject(i + 1, when (param) {
+                                is ZonedDateTime -> {
+                                    Timestamp.valueOf(
+                                            param.withZoneSameInstant(config.databaseZoneOffset).toLocalDateTime())
+                                }
+                                is OffsetDateTime -> {
+                                    Timestamp.valueOf(
+                                            param.withOffsetSameInstant(config.databaseZoneOffset).toLocalDateTime())
+                                }
+                                is OffsetTime -> {
+                                    Time.valueOf(param.withOffsetSameInstant(config.databaseZoneOffset).toLocalTime())
+                                }
+                                is LocalDateTime -> Timestamp.valueOf(param)
+                                is LocalDate -> java.sql.Date.valueOf(param)
+                                is LocalTime -> Time.valueOf(param)
+                                is Instant -> Timestamp.from(param)
+                                else -> param
+                            })
+                        }
+                        CONVERT_NONLOCAL -> {
+                            stmt.setObject(i + 1, when (param) {
+                                is ZonedDateTime -> param.withZoneSameInstant(config.databaseZoneOffset)
+                                is OffsetDateTime -> {
+                                    param.withOffsetSameInstant(config.databaseZoneOffset).toLocalDateTime()
+                                }
+                                is OffsetTime -> param.with(config.databaseZoneOffset).toLocalTime()
+                                else -> param
+                            })
+                        }
+                    }
+                }
             }
         }
 

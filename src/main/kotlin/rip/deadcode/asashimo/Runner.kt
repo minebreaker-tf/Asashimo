@@ -10,35 +10,37 @@ internal object Runner {
 
     fun <T : Any> fetch(
             conn: Connection,
+            config: AsashimoConfig,
             sql: String,
             cls: KClass<T>,
             params: Map<String, Any> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): T {
 
-        val stmt = StatementGenerator.create(conn, sql, params)
+        val stmt = StatementGenerator.create(conn, config, sql, params)
         val result = stmt.execute()
         check(result)
 
         val rs = stmt.resultSet
         checkState(rs.next(), "No Result")  // Assure successful
-        return resultMapper?.invoke(rs) ?: GeneralResultMapper.map(cls, rs)
+        return resultMapper?.invoke(rs) ?: GeneralResultMapper.map(config, cls, rs)
     }
 
     fun <T : Any> fetchAll(
             conn: Connection,
+            config: AsashimoConfig,
             sql: String,
             cls: KClass<T>,
             params: Map<String, Any> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): List<T> {
 
-        val stmt = StatementGenerator.create(conn, sql, params)
+        val stmt = StatementGenerator.create(conn, config, sql, params)
         val result = stmt.execute()
         check(result)
 
         val rs = stmt.resultSet
         val mutableList = mutableListOf<T>()
         while (rs.next()) {
-            val row = resultMapper?.invoke(rs) ?: GeneralResultMapper.map(cls, rs)
+            val row = resultMapper?.invoke(rs) ?: GeneralResultMapper.map(config, cls, rs)
             mutableList.add(row)
         }
 
@@ -49,19 +51,21 @@ internal object Runner {
 
     fun exec(
             conn: Connection,
+            config: AsashimoConfig,
             sql: String,
             params: Map<String, Any> = mapOf()): Int {
 
-        val stmt = StatementGenerator.create(conn, sql, params)
+        val stmt = StatementGenerator.create(conn, config, sql, params)
         return stmt.executeUpdate()
     }
 
     fun execLarge(
             conn: Connection,
+            config: AsashimoConfig,
             sql: String,
             params: Map<String, Any> = mapOf()): Long {
 
-        val stmt = StatementGenerator.create(conn, sql, params)
+        val stmt = StatementGenerator.create(conn, config, sql, params)
         return stmt.executeLargeUpdate()
     }
 

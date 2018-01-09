@@ -6,6 +6,7 @@ import javax.sql.DataSource
 
 internal class DefaultConnector(
         private val dataSource: DataSource,
-        defaultExecutor: ListeningExecutorService) : AbstractConnector(defaultExecutor) {
+        config: AsashimoConfig,
+        defaultExecutor: ListeningExecutorService) : AbstractConnector(config, defaultExecutor) {
     override fun getConnection(): Connection = dataSource.connection
 }

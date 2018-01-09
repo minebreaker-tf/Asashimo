@@ -8,6 +8,7 @@ import java.util.function.Supplier
 import kotlin.reflect.KClass
 
 internal abstract class AbstractConnector(
+        private val config: AsashimoConfig,
         private val defaultExecutor: ListeningExecutorService) : Connector {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
@@ -22,7 +23,8 @@ internal abstract class AbstractConnector(
         return Supplier { use { fetch(sql, cls, resultMapper) } }
     }
 
-    override fun <T : Any> fetchAllLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<List<T>> {
+    override fun <T : Any> fetchAllLazy(
+            sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<List<T>> {
         return Supplier { use { fetchAll(sql, cls, resultMapper) } }
     }
 
@@ -69,15 +71,15 @@ internal abstract class AbstractConnector(
     override fun with(block: (MutableMap<String, Any>) -> Unit): WithClause {
         val params = mutableMapOf<String, Any>()
         block(params)
-        return WithClauseImpl(getConnection(), ::resetDataSourceCallback, params, defaultExecutor)
+        return WithClauseImpl(getConnection(), config, ::resetDataSourceCallback, params, defaultExecutor)
     }
 
     override fun with(params: Map<String, Any>): WithClause {
-        return WithClauseImpl(getConnection(), ::resetDataSourceCallback, params, defaultExecutor)
+        return WithClauseImpl(getConnection(), config, ::resetDataSourceCallback, params, defaultExecutor)
     }
 
     override fun <T> use(block: UseClause.() -> T): T {
-        return WithClauseImpl(getConnection(), ::resetDataSourceCallback, mapOf(), defaultExecutor).use(block)
+        return WithClauseImpl(getConnection(), config, ::resetDataSourceCallback, mapOf(), defaultExecutor).use(block)
     }
 
     override fun <T> useLazy(block: UseClause.() -> T): Supplier<T> {
@@ -92,7 +94,8 @@ internal abstract class AbstractConnector(
     }
 
     override fun <T> transactional(block: UseClause.() -> T): T {
-        return WithClauseImpl(getConnection(), ::resetDataSourceCallback, mapOf(), defaultExecutor).transactional(block)
+        return WithClauseImpl(
+                getConnection(), config, ::resetDataSourceCallback, mapOf(), defaultExecutor).transactional(block)
     }
 
     override fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T> {

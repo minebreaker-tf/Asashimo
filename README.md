@@ -147,6 +147,6 @@ the default executor pooled by Asashimo is used.
 * Batch
 * Configurable executor for async API
 * Map API (fetch values with map interface)
+* Retrieve strategy API
 * Documentation
 * More tests
-* Maven distribution

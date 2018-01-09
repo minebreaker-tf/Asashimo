@@ -14,18 +14,18 @@ object Connectors {
     @JvmOverloads
     fun newInstance(dataSource: DataSource, config: AsashimoConfig = AsashimoConfig()): Connector {
         return if (config.resetDataSourceWhenExceptionOccurred) {
-            ResettingConnector({ dataSource }, jvmUniqueExecutor)
+            ResettingConnector({ dataSource }, config, jvmUniqueExecutor)
         } else {
-            DefaultConnector(dataSource, jvmUniqueExecutor)
+            DefaultConnector(dataSource, config, jvmUniqueExecutor)
         }
     }
 
     @JvmOverloads
     fun newInstance(dataSourceFactory: () -> DataSource, config: AsashimoConfig = AsashimoConfig()): Connector {
         return if (config.resetDataSourceWhenExceptionOccurred) {
-            ResettingConnector(dataSourceFactory, jvmUniqueExecutor)
+            ResettingConnector(dataSourceFactory, config, jvmUniqueExecutor)
         } else {
-            DefaultConnector(dataSourceFactory(), jvmUniqueExecutor)
+            DefaultConnector(dataSourceFactory(), config, jvmUniqueExecutor)
         }
     }
 

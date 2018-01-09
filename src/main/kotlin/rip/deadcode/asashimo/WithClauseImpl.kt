@@ -11,16 +11,17 @@ import kotlin.reflect.KClass
 
 internal class WithClauseImpl(
         private val conn: Connection,
+        private val config: AsashimoConfig,
         private val connectionResetCallback: () -> Unit,
         private val params: Map<String, Any>,
         private val defaultExecutor: ListeningExecutorService) : WithClause {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
-        return use { Runner.fetch(conn, sql, cls, resultMapper = resultMapper, params = params) }
+        return use { Runner.fetch(conn, config, sql, cls, resultMapper = resultMapper, params = params) }
     }
 
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
-        return use { Runner.fetchAll(conn, sql, cls, resultMapper = resultMapper, params = params) }
+        return use { Runner.fetchAll(conn, config, sql, cls, resultMapper = resultMapper, params = params) }
     }
 
     override fun <T : Any> fetchLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<T> {
@@ -49,11 +50,11 @@ internal class WithClauseImpl(
     }
 
     override fun exec(sql: String): Int {
-        return use { Runner.exec(conn, sql, params) }
+        return use { Runner.exec(conn, config, sql, params) }
     }
 
     override fun execLarge(sql: String): Long {
-        return use { Runner.execLarge(conn, sql, params) }
+        return use { Runner.execLarge(conn, config, sql, params) }
     }
 
     override fun execAsync(sql: String, executorService: ListeningExecutorService?): ListenableFuture<Int> {
@@ -67,7 +68,7 @@ internal class WithClauseImpl(
     override fun <T> use(block: UseClause.() -> T): T {
         try {
             conn.autoCommit = true
-            return UseClauseImpl(conn, connectionResetCallback, params).block()
+            return UseClauseImpl(conn, config, connectionResetCallback, params).block()
         } catch (e: Exception) {
             connectionResetCallback()
             throw AsashimoException("Exception in use method.", e)
@@ -99,7 +100,7 @@ internal class WithClauseImpl(
                 throw AsashimoException("Transaction is not available.")
             }
             conn.autoCommit = false
-            val result = UseClauseImpl(conn, connectionResetCallback, params).block()
+            val result = UseClauseImpl(conn, config, connectionResetCallback, params).block()
             conn.commit()
             return result
         } catch (e: Exception) {

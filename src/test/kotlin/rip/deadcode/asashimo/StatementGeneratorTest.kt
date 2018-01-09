@@ -66,6 +66,7 @@ from
 
         val result = StatementGenerator.create(
                 conn,
+                AsashimoConfig(),
                 "select id, name from user where id = :id and password = :name",
                 mapOf("id" to 123, "name" to "Robert'); DROP TABLE Students;--"))
 
@@ -80,7 +81,8 @@ from
     @Test(expected = IllegalStateException::class)
     fun test2() {
         val conn = mock(Connection::class.java)
-        StatementGenerator.create(conn, "select * from user where id = ?", params = mapOf("id" to 123))
+        StatementGenerator.create(
+                conn, AsashimoConfig(), "select * from user where id = ?", params = mapOf("id" to 123))
     }
 
     @Test
@@ -91,6 +93,7 @@ from
 
         val result = StatementGenerator.create(
                 conn,
+                AsashimoConfig(),
                 "select id, name from user where id in (:ids)",
                 mapOf("ids" to listOf(123, 456, 789)))
 

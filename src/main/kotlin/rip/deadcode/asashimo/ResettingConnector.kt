@@ -7,7 +7,8 @@ import javax.sql.DataSource
 
 internal class ResettingConnector(
         private val dataSourceFactory: () -> DataSource,
-        defaultExecutor: ListeningExecutorService) : AbstractConnector(defaultExecutor) {
+        config: AsashimoConfig,
+        defaultExecutor: ListeningExecutorService) : AbstractConnector(config, defaultExecutor) {
 
     private var dataSource = dataSourceFactory()
     private val resetDataSource = AtomicBoolean(false)

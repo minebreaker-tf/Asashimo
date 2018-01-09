@@ -13,7 +13,7 @@ class GeneralResultMapperTest {
     fun testBasicType1() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getInt(1)).thenReturn(123)
-        val res = GeneralResultMapper.convertToBasicType(Int::class, rs)
+        val res = GeneralResultMapper.convertToBasicType(Int::class, rs, AsashimoConfig())
 
         assertThat(res).isEqualTo(123)
     }
@@ -22,7 +22,7 @@ class GeneralResultMapperTest {
     fun testBasicType2() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getBytes(1)).thenReturn(byteArrayOf(62, 63, 64))
-        val res = GeneralResultMapper.convertToBasicType(ByteArray::class, rs)
+        val res = GeneralResultMapper.convertToBasicType(ByteArray::class, rs, AsashimoConfig())
 
         assertThat(res).isEqualTo(byteArrayOf(62, 63, 64))
     }
@@ -37,7 +37,7 @@ class GeneralResultMapperTest {
         `when`(rs.metaData).thenReturn(meta)
         `when`(rs.getInt(1)).thenReturn(123)
         `when`(rs.getString(2)).thenReturn("John")
-        val res = GeneralResultMapper.convertWithAllArgsConstructor(User1::class, rs)!!
+        val res = GeneralResultMapper.convertWithAllArgsConstructor(User1::class, rs, AsashimoConfig())!!
 
         assertThat(res.id).isEqualTo(123)
         assertThat(res.name).isEqualTo("John")

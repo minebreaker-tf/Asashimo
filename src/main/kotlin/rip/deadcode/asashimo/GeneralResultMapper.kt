@@ -3,6 +3,7 @@ package rip.deadcode.asashimo
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.CaseFormat.*
 import org.slf4j.LoggerFactory
+import rip.deadcode.asashimo.Java8DateConversionStrategy.*
 import java.beans.Introspector
 import java.io.InputStream
 import java.io.Reader
@@ -10,6 +11,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URL
 import java.sql.*
+import java.time.*
 import kotlin.reflect.KClass
 
 @Suppress("UNCHECKED_CAST")
@@ -17,14 +19,15 @@ object GeneralResultMapper {
 
     private val logger = LoggerFactory.getLogger(GeneralResultMapper::class.java)
 
-    fun <T : Any> map(cls: KClass<T>, resultSet: ResultSet): T {
-        return convertToBasicType(cls, resultSet)
-                ?: convertWithAllArgsConstructor(cls, resultSet)
+    fun <T : Any> map(config: AsashimoConfig, cls: KClass<T>, resultSet: ResultSet): T {
+        return convertToBasicType(cls, resultSet, config)
+                ?: convertWithAllArgsConstructor(cls, resultSet, config)
                 ?: convertAsBean(cls, resultSet)
                 ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
     }
 
-    private fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>): T? {
+    // TODO refactoring everything
+    private fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>, config: AsashimoConfig): T? {
         @Suppress("IMPLICIT_CAST_TO_ANY")
         return when (type) {
         // Directly provided by JDBC driver
@@ -52,8 +55,40 @@ object GeneralResultMapper {
         // Manual conversion
             BigInteger::class -> getBigDecimal(i).toBigInteger() as T
             else -> {
-                logger.trace("Could not found corresponding basic type.")
-                null
+                when (config.java8dateConversionStrategy) {
+                    RAW -> null
+                    CONVERT -> when (type) {
+                    // DBのゾーンは別にするほうが良いかもしれない。要改善。
+                        ZonedDateTime::class -> {
+                            getTimestamp(i).toLocalDateTime().atZone(config.databaseZoneOffset) as T
+                        }
+                        OffsetDateTime::class -> {
+                            getTimestamp(i).toLocalDateTime().atOffset(config.databaseZoneOffset) as T
+                        }
+                        OffsetTime::class -> getTime(i).toLocalTime().atOffset(config.databaseZoneOffset) as T
+                        LocalDateTime::class -> getTimestamp(i).toLocalDateTime() as T
+                        LocalDate::class -> getDate(i).toLocalDate() as T
+                        LocalTime::class -> getTime(i).toLocalTime() as T
+                        Instant::class -> getTimestamp(i).toInstant() as T
+                        else -> null
+                    }
+                    CONVERT_NONLOCAL -> when (type) {
+                        ZonedDateTime::class -> {
+                            getObject(i, LocalDateTime::class.java).atZone(config.databaseZoneOffset) as T
+                        }
+                        OffsetDateTime::class -> {
+                            getObject(i, LocalDateTime::class.java).atOffset(config.databaseZoneOffset) as T
+                        }
+                        OffsetTime::class -> getObject(i, LocalTime::class.java).atOffset(config.databaseZoneOffset) as T
+                        LocalDateTime::class -> getObject(i, LocalDateTime::class.java) as T
+                        LocalDate::class -> getObject(i, LocalDate::class.java) as T
+                        LocalTime::class -> getObject(i, LocalTime::class.java) as T
+                        Instant::class -> getObject(i, Instant::class.java) as T
+                        else -> {
+                            null
+                        }
+                    }
+                }
             }
         }
     }
@@ -62,9 +97,11 @@ object GeneralResultMapper {
      * JDBC型が要求されていた場合、対応するメソッドを使用して値を取得する.
      */
     @VisibleForTesting
-    internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet): T? {
+    internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet, config: AsashimoConfig): T? {
         return try {
-            return resultSet.getUnknown(1, cls)
+            val result = resultSet.getUnknown(1, cls, config)
+            logger.trace("Could not found corresponding basic type.")
+            result
         } catch (e: Exception) {
             when (e) {
                 is SQLException -> throw e
@@ -77,7 +114,8 @@ object GeneralResultMapper {
     }
 
     @VisibleForTesting
-    internal fun <T : Any> convertWithAllArgsConstructor(cls: KClass<T>, resultSet: ResultSet): T? {
+    internal fun <T : Any> convertWithAllArgsConstructor(
+            cls: KClass<T>, resultSet: ResultSet, config: AsashimoConfig): T? {
 
         return try {
             val resultSize = resultSet.metaData.columnCount
@@ -91,7 +129,8 @@ object GeneralResultMapper {
                     val types = constructor.parameterTypes
                     val args = arrayOfNulls<Any>(types.size)
                     for ((i, type) in types.withIndex()) {
-                        args[i] = resultSet.getUnknown<Any>(i + 1, type.kotlin) ?: resultSet.getObject(i + 1, type)
+                        args[i] = resultSet.getUnknown<Any>(i + 1, type.kotlin, config) ?:
+                                resultSet.getObject(i + 1, type)
                     }
                     if (!constructor.isAccessible) constructor.isAccessible = true
                     return constructor.newInstance(*args) as T
@@ -99,7 +138,7 @@ object GeneralResultMapper {
                     // Just ignore an exception and try next constructor
                     when (e) {
                         is SQLException -> throw e
-                        else -> logger.trace("Failed to instantiate",  e)
+                        else -> logger.trace("Failed to instantiate", e)
                     }
                 }
             }
