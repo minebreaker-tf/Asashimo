@@ -148,5 +148,6 @@ the default executor pooled by Asashimo is used.
 * Configurable executor for async API
 * Map API (fetch values with map interface)
 * Retrieve strategy API
+* `persist(KClass)`, `find(id: Any, KClass)`
 * Documentation
 * More tests
