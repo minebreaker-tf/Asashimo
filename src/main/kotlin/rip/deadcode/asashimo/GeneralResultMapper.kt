@@ -125,6 +125,7 @@ object GeneralResultMapper {
             val sameSizeConstructors = constructors.filter { it.parameterCount == resultSize }
             for (constructor in sameSizeConstructors) {
                 // TODO check metadata to infer appropriate constructor
+                // needs more wise way
                 try {
                     val types = constructor.parameterTypes
                     val args = arrayOfNulls<Any>(types.size)

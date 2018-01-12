@@ -148,6 +148,8 @@ the default executor pooled by Asashimo is used.
 * Configurable executor for async API
 * Map API (fetch values with map interface)
 * Retrieve strategy API
+* when ResultSet has no rows (`fetchMaybe()`)
+* JPA annotation compatibility (`@Id`, `@Column`)
 * `persist(KClass)`, `find(id: Any, KClass)`
 * Documentation
 * More tests
