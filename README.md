@@ -29,7 +29,7 @@ repositories {
     }
 }
 dependencies {
-    compile 'rip.deadcode:asashimo:0.1'
+    compile 'rip.deadcode:asashimo:0.2'
 }
 ```
 
@@ -143,13 +143,56 @@ the default executor pooled by Asashimo is used.
 
 * Java 8 Date and Time API
 * API for Java
+* Default `ResultMapper` strategy selection
 * Savepoint
 * Batch
 * Configurable executor for async API
 * Map API (fetch values with map interface)
-* Retrieve strategy API
-* when ResultSet has no rows (`fetchMaybe()`)
+* Fetch interface API
+* class to parameter binding
+* Parameter binding in `use{}` clause
+* When ResultSet has no rows (`fetchMaybe()`)
 * JPA annotation compatibility (`@Id`, `@Column`)
+* `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * `persist(KClass)`, `find(id: Any, KClass)`
 * Documentation
 * More tests
+
+```kotlin
+fun jpaAnnotationApi() {
+    @Entity
+    data class User(
+        @Id
+        @Column(name="user_id")
+        val id: Int,
+        @Column(name="user_name")
+        val name: String
+    )
+    var user = connector.find(123, User::class)
+    user = User(456, "John")
+    connector.persist(user)
+}
+```
+
+```kotlin
+fun mapApi() {
+    val result: Map<String, SqlValue> = connector.fetch(
+            "select 'hello, world' as message from dual", Map::class)
+    assertThat(result["message"].asString()).isEqualTo("hello, world")
+}
+```
+
+```kotlin
+fun cursorApi() {
+
+    class CustomCursor(private val rs: ResultSet) {
+        fun getString(): String = rs.getString(1)
+    }
+
+    val connector = Connectors.newInstance(dataSource, config, createCursor)
+    val data = connector.cursor()
+                        .getString()
+    val data = connector.cursor(CustomCusor::class)
+                        .getString()
+}
+```
