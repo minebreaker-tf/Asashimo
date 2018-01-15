@@ -13,7 +13,7 @@ internal object Runner {
             config: AsashimoConfig,
             sql: String,
             cls: KClass<T>,
-            params: Map<String, Any> = mapOf(),
+            params: Map<String, Any?> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): T {
 
         val stmt = StatementGenerator.create(conn, config, sql, params)
@@ -30,7 +30,7 @@ internal object Runner {
             config: AsashimoConfig,
             sql: String,
             cls: KClass<T>,
-            params: Map<String, Any> = mapOf(),
+            params: Map<String, Any?> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): List<T> {
 
         val stmt = StatementGenerator.create(conn, config, sql, params)
@@ -53,7 +53,7 @@ internal object Runner {
             conn: Connection,
             config: AsashimoConfig,
             sql: String,
-            params: Map<String, Any> = mapOf()): Int {
+            params: Map<String, Any?> = mapOf()): Int {
 
         val stmt = StatementGenerator.create(conn, config, sql, params)
         return stmt.executeUpdate()
@@ -63,7 +63,7 @@ internal object Runner {
             conn: Connection,
             config: AsashimoConfig,
             sql: String,
-            params: Map<String, Any> = mapOf()): Long {
+            params: Map<String, Any?> = mapOf()): Long {
 
         val stmt = StatementGenerator.create(conn, config, sql, params)
         return stmt.executeLargeUpdate()

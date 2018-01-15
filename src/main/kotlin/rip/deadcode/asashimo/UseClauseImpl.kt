@@ -8,7 +8,7 @@ internal class UseClauseImpl(
         private val connection: Connection,
         private val config: AsashimoConfig,
         private val connectionResetCallback: () -> Unit,
-        private val params: Map<String, Any> = mapOf()) : UseClause {
+        private val params: Map<String, Any?> = mapOf()) : UseClause {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         try {

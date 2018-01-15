@@ -16,7 +16,7 @@ internal object StatementGenerator {
 
     private val logger = LoggerFactory.getLogger(StatementGenerator::class.java)
 
-    fun create(conn: Connection, config: AsashimoConfig, sql: String, params: Map<String, Any>): PreparedStatement {
+    fun create(conn: Connection, config: AsashimoConfig, sql: String, params: Map<String, Any?>): PreparedStatement {
         if (params.isEmpty()) return conn.prepareStatement(sql)
 
         // TODO refactoring for better readability and performance

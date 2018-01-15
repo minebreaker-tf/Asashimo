@@ -68,8 +68,8 @@ internal abstract class AbstractConnector(
         }
     }
 
-    override fun with(block: (MutableMap<String, Any>) -> Unit): WithClause {
-        val params = mutableMapOf<String, Any>()
+    override fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause {
+        val params = mutableMapOf<String, Any?>()
         block(params)
         return WithClauseImpl(getConnection(), config, ::resetDataSourceCallback, params, defaultExecutor)
     }

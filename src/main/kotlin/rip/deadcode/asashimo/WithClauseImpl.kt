@@ -13,7 +13,7 @@ internal class WithClauseImpl(
         private val conn: Connection,
         private val config: AsashimoConfig,
         private val connectionResetCallback: () -> Unit,
-        private val params: Map<String, Any>,
+        private val params: Map<String, Any?>,
         private val defaultExecutor: ListeningExecutorService) : WithClause {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
