@@ -31,59 +31,59 @@ object GeneralResultMapper {
         @Suppress("IMPLICIT_CAST_TO_ANY")
         return when (type) {
         // Directly provided by JDBC driver
-            java.sql.Array::class -> getArray(i) as T
-            BigDecimal::class -> getBigDecimal(i) as T
-            InputStream::class -> getBinaryStream(i) as T
-            Blob::class -> getBlob(i) as T
-            Boolean::class -> getBoolean(i) as T
-            Byte::class -> getByte(i) as T
-            ByteArray::class -> getBytes(i) as T
-            Reader::class -> getCharacterStream(i) as T
-            Clob::class -> getClob(i) as T
-            java.sql.Date::class -> getDate(i) as T
-            Double::class -> getDouble(i) as T
-            Float::class -> getFloat(i) as T
-            Int::class -> getInt(i) as T
-            Long::class -> getLong(i) as T
-            Short::class -> getShort(i) as T
-            SQLXML::class -> getSQLXML(i) as T
-            String::class -> getString(i) as T
-            Time::class -> getTime(i) as T
-            Timestamp::class -> getTimestamp(i) as T
-            URL::class -> getURL(i) as T
+            java.sql.Array::class -> getArray(i) as T?
+            BigDecimal::class -> getBigDecimal(i) as T?
+            InputStream::class -> getBinaryStream(i) as T?
+            Blob::class -> getBlob(i) as T?
+            Boolean::class -> getBoolean(i) as T?
+            Byte::class -> getByte(i) as T?
+            ByteArray::class -> getBytes(i) as T?
+            Reader::class -> getCharacterStream(i) as T?
+            Clob::class -> getClob(i) as T?
+            java.sql.Date::class -> getDate(i) as T?
+            Double::class -> getDouble(i) as T?
+            Float::class -> getFloat(i) as T?
+            Int::class -> getInt(i) as T?
+            Long::class -> getLong(i) as T?
+            Short::class -> getShort(i) as T?
+            SQLXML::class -> getSQLXML(i) as T?
+            String::class -> getString(i) as T?
+            Time::class -> getTime(i) as T?
+            Timestamp::class -> getTimestamp(i) as T?
+            URL::class -> getURL(i) as T?
 
         // Manual conversion
-            BigInteger::class -> getBigDecimal(i).toBigInteger() as T
+            BigInteger::class -> getBigDecimal(i).toBigInteger() as T?
             else -> {
                 when (config.java8dateConversionStrategy) {
                     RAW -> null
                     CONVERT -> when (type) {
                     // DBのゾーンは別にするほうが良いかもしれない。要改善。
                         ZonedDateTime::class -> {
-                            getTimestamp(i).toLocalDateTime().atZone(config.databaseZoneOffset) as T
+                            getTimestamp(i).toLocalDateTime().atZone(config.databaseZoneOffset) as T?
                         }
                         OffsetDateTime::class -> {
-                            getTimestamp(i).toLocalDateTime().atOffset(config.databaseZoneOffset) as T
+                            getTimestamp(i).toLocalDateTime().atOffset(config.databaseZoneOffset) as T?
                         }
-                        OffsetTime::class -> getTime(i).toLocalTime().atOffset(config.databaseZoneOffset) as T
-                        LocalDateTime::class -> getTimestamp(i).toLocalDateTime() as T
-                        LocalDate::class -> getDate(i).toLocalDate() as T
-                        LocalTime::class -> getTime(i).toLocalTime() as T
-                        Instant::class -> getTimestamp(i).toInstant() as T
+                        OffsetTime::class -> getTime(i).toLocalTime().atOffset(config.databaseZoneOffset) as T?
+                        LocalDateTime::class -> getTimestamp(i).toLocalDateTime() as T?
+                        LocalDate::class -> getDate(i).toLocalDate() as T?
+                        LocalTime::class -> getTime(i).toLocalTime() as T?
+                        Instant::class -> getTimestamp(i).toInstant() as T?
                         else -> null
                     }
                     CONVERT_NONLOCAL -> when (type) {
                         ZonedDateTime::class -> {
-                            getObject(i, LocalDateTime::class.java).atZone(config.databaseZoneOffset) as T
+                            getObject(i, LocalDateTime::class.java).atZone(config.databaseZoneOffset) as T?
                         }
                         OffsetDateTime::class -> {
-                            getObject(i, LocalDateTime::class.java).atOffset(config.databaseZoneOffset) as T
+                            getObject(i, LocalDateTime::class.java).atOffset(config.databaseZoneOffset) as T?
                         }
-                        OffsetTime::class -> getObject(i, LocalTime::class.java).atOffset(config.databaseZoneOffset) as T
-                        LocalDateTime::class -> getObject(i, LocalDateTime::class.java) as T
-                        LocalDate::class -> getObject(i, LocalDate::class.java) as T
-                        LocalTime::class -> getObject(i, LocalTime::class.java) as T
-                        Instant::class -> getObject(i, Instant::class.java) as T
+                        OffsetTime::class -> getObject(i, LocalTime::class.java).atOffset(config.databaseZoneOffset) as T?
+                        LocalDateTime::class -> getObject(i, LocalDateTime::class.java) as T?
+                        LocalDate::class -> getObject(i, LocalDate::class.java) as T?
+                        LocalTime::class -> getObject(i, LocalTime::class.java) as T?
+                        Instant::class -> getObject(i, Instant::class.java) as T?
                         else -> {
                             null
                         }
