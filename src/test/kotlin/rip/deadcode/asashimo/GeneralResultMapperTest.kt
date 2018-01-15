@@ -61,4 +61,20 @@ class GeneralResultMapperTest {
         assertThat(res.name).isEqualTo("John")
     }
 
+    private data class User3(val id: Int, val name: String?)
+
+    @Test
+    fun testAllArgConstructor2() {
+        val rs = mock(ResultSet::class.java)
+        val meta = mock(ResultSetMetaData::class.java)
+        `when`(meta.columnCount).thenReturn(2)
+        `when`(rs.metaData).thenReturn(meta)
+        `when`(rs.getInt(1)).thenReturn(123)
+        `when`(rs.getString(2)).thenReturn(null)
+        val res = GeneralResultMapper.convertWithAllArgsConstructor(User3::class, rs, AsashimoConfig())!!
+
+        assertThat(res.id).isEqualTo(123)
+        assertThat(res.name).isNull()
+    }
+
 }
