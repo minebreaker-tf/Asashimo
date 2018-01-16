@@ -143,16 +143,13 @@ the default executor pooled by Asashimo is used.
 
 * Java 8 Date and Time API
 * API for Java
-* Default `ResultMapper` strategy selection
 * Savepoint
 * Batch
-* Configurable executor for async API
 * Map API (fetch values with map interface)
 * Fetch interface API
-* class to parameter binding
-* Parameter binding in `use{}` clause
-* When ResultSet has no rows (`fetchMaybe()`)
 * JPA annotation compatibility (`@Id`, `@Column`)
+* class to parameter binding, based on JPA annotations / field names
+* Parameter binding in `use{}` clause
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * `persist(KClass)`, `find(id: Any, KClass)`
 * Documentation
