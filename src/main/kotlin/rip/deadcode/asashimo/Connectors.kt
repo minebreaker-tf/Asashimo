@@ -2,6 +2,8 @@ package rip.deadcode.asashimo
 
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import rip.deadcode.asashimo.resultmapper.ConstructorResultMapper
+import rip.deadcode.asashimo.resultmapper.GeneralResultMapper
 import java.util.concurrent.Executors
 import javax.sql.DataSource
 
@@ -12,24 +14,33 @@ object Connectors {
     }
 
     @JvmOverloads
-    fun newInstance(dataSource: DataSource, config: AsashimoConfig = AsashimoConfig()): Connector {
-        return newInstance({ dataSource }, config)
+    fun newInstance(
+            dataSource: DataSource,
+            config: AsashimoConfig = AsashimoConfig(),
+            defaultResultMapper: GeneralResultMapper = ConstructorResultMapper
+    ): Connector {
+        return newInstance({ dataSource }, config, defaultResultMapper)
     }
 
     @JvmOverloads
-    fun newInstance(dataSourceFactory: () -> DataSource, config: AsashimoConfig = AsashimoConfig()): Connector {
-        return if (config.resetDataSourceWhenExceptionOccurred) {
-            ResettingConnector(AsashimoRegistry(dataSourceFactory, config, jvmUniqueExecutor))
-        } else {
-            DefaultConnector(AsashimoRegistry(dataSourceFactory, config, jvmUniqueExecutor))
-        }
+    fun newInstance(
+            dataSourceFactory: () -> DataSource,
+            config: AsashimoConfig = AsashimoConfig(),
+            defaultResultMapper: GeneralResultMapper = ConstructorResultMapper
+    ): Connector {
+        return newInstance(AsashimoRegistry(
+                dataSourceFactory,
+                config,
+                defaultResultMapper,
+                jvmUniqueExecutor
+        ))
     }
 
-    fun newInstance(config: AsashimoConfig, registry: AsashimoRegistry): Connector {
-        return if (config.resetDataSourceWhenExceptionOccurred) {
+    fun newInstance(registry: AsashimoRegistry): Connector {
+        return if (registry.config.resetDataSourceWhenExceptionOccurred) {
             ResettingConnector(registry)
         } else {
-            ResettingConnector(registry)
+            DefaultConnector(registry)
         }
     }
 

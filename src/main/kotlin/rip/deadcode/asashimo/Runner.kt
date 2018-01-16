@@ -22,7 +22,7 @@ internal object Runner {
 
         val rs = stmt.resultSet
         checkState(rs.next(), "No Result")  // Assure successful
-        return resultMapper?.invoke(rs) ?: GeneralResultMapper.map(registry, cls, rs)
+        return resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
     }
 
     fun <T : Any> fetchAll(
@@ -40,7 +40,7 @@ internal object Runner {
         val rs = stmt.resultSet
         val mutableList = mutableListOf<T>()
         while (rs.next()) {
-            val row = resultMapper?.invoke(rs) ?: GeneralResultMapper.map(registry, cls, rs)
+            val row = resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
             mutableList.add(row)
         }
 

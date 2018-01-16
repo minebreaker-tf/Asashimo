@@ -6,6 +6,7 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
+import rip.deadcode.asashimo.resultmapper.BeanResultMapper
 import java.sql.Connection
 import java.sql.PreparedStatement
 import javax.sql.DataSource
@@ -17,7 +18,10 @@ class StatementGeneratorTest {
     @Before
     fun setUp() {
         mockRegistry = AsashimoRegistry(
-                { mock(DataSource::class.java) }, AsashimoConfig(), mock(ListeningExecutorService::class.java))
+                { mock(DataSource::class.java) },
+                AsashimoConfig(),
+                BeanResultMapper,
+                mock(ListeningExecutorService::class.java))
     }
 
     @Test

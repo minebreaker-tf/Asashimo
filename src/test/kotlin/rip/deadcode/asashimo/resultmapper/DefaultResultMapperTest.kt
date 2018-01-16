@@ -1,19 +1,20 @@
-package rip.deadcode.asashimo
+package rip.deadcode.asashimo.resultmapper
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
+import rip.deadcode.asashimo.AsashimoConfig
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 
-class GeneralResultMapperTest {
+class DefaultResultMapperTest {
 
     @Test
     fun testBasicType1() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getInt(1)).thenReturn(123)
-        val res = GeneralResultMapper.convertToBasicType(Int::class, rs, AsashimoConfig())
+        val res = convertToBasicType(Int::class, rs, AsashimoConfig())
 
         assertThat(res).isEqualTo(123)
     }
@@ -22,7 +23,7 @@ class GeneralResultMapperTest {
     fun testBasicType2() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getBytes(1)).thenReturn(byteArrayOf(62, 63, 64))
-        val res = GeneralResultMapper.convertToBasicType(ByteArray::class, rs, AsashimoConfig())
+        val res = convertToBasicType(ByteArray::class, rs, AsashimoConfig())
 
         assertThat(res).isEqualTo(byteArrayOf(62, 63, 64))
     }
@@ -37,7 +38,7 @@ class GeneralResultMapperTest {
         `when`(rs.metaData).thenReturn(meta)
         `when`(rs.getInt(1)).thenReturn(123)
         `when`(rs.getString(2)).thenReturn("John")
-        val res = GeneralResultMapper.convertWithAllArgsConstructor(User1::class, rs, AsashimoConfig())!!
+        val res = ConstructorResultMapper.convertWithAllArgsConstructor(User1::class, rs, AsashimoConfig())!!
 
         assertThat(res.id).isEqualTo(123)
         assertThat(res.name).isEqualTo("John")
@@ -55,7 +56,7 @@ class GeneralResultMapperTest {
         `when`(rs.metaData).thenReturn(meta)
         `when`(rs.getObject("ID", Int::class.java)).thenReturn(123)
         `when`(rs.getObject("NAME", String::class.java)).thenReturn("John")
-        val res = GeneralResultMapper.convertAsBean(User2::class, rs)!!
+        val res = BeanResultMapper.convertAsBean(User2::class, rs)!!
 
         assertThat(res.id).isEqualTo(123)
         assertThat(res.name).isEqualTo("John")
@@ -71,7 +72,7 @@ class GeneralResultMapperTest {
         `when`(rs.metaData).thenReturn(meta)
         `when`(rs.getInt(1)).thenReturn(123)
         `when`(rs.getString(2)).thenReturn(null)
-        val res = GeneralResultMapper.convertWithAllArgsConstructor(User3::class, rs, AsashimoConfig())!!
+        val res = ConstructorResultMapper.convertWithAllArgsConstructor(User3::class, rs, AsashimoConfig())!!
 
         assertThat(res.id).isEqualTo(123)
         assertThat(res.name).isNull()
