@@ -19,9 +19,9 @@ object GeneralResultMapper {
 
     private val logger = LoggerFactory.getLogger(GeneralResultMapper::class.java)
 
-    fun <T : Any> map(config: AsashimoConfig, cls: KClass<T>, resultSet: ResultSet): T {
-        return convertToBasicType(cls, resultSet, config)
-                ?: convertWithAllArgsConstructor(cls, resultSet, config)
+    fun <T : Any> map(registry: AsashimoRegistry, cls: KClass<T>, resultSet: ResultSet): T {
+        return convertToBasicType(cls, resultSet, registry.config)
+                ?: convertWithAllArgsConstructor(cls, resultSet, registry.config)
                 ?: convertAsBean(cls, resultSet)
                 ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
     }

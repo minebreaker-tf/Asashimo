@@ -1,13 +1,24 @@
 package rip.deadcode.asashimo
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.util.concurrent.ListeningExecutorService
+import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import java.sql.Connection
 import java.sql.PreparedStatement
+import javax.sql.DataSource
 
 class StatementGeneratorTest {
+
+    var mockRegistry: AsashimoRegistry? = null
+
+    @Before
+    fun setUp() {
+        mockRegistry = AsashimoRegistry(
+                { mock(DataSource::class.java) }, AsashimoConfig(), mock(ListeningExecutorService::class.java))
+    }
 
     @Test
     fun testLex1() {
@@ -66,7 +77,7 @@ from
 
         val result = StatementGenerator.create(
                 conn,
-                AsashimoConfig(),
+                mockRegistry!!,
                 "select id, name from user where id = :id and password = :name",
                 mapOf("id" to 123, "name" to "Robert'); DROP TABLE Students;--"))
 
@@ -82,7 +93,7 @@ from
     fun test2() {
         val conn = mock(Connection::class.java)
         StatementGenerator.create(
-                conn, AsashimoConfig(), "select * from user where id = ?", params = mapOf("id" to 123))
+                conn, mockRegistry!!, "select * from user where id = ?", params = mapOf("id" to 123))
     }
 
     @Test
@@ -93,7 +104,7 @@ from
 
         val result = StatementGenerator.create(
                 conn,
-                AsashimoConfig(),
+                mockRegistry!!,
                 "select id, name from user where id in (:ids)",
                 mapOf("ids" to listOf(123, 456, 789)))
 

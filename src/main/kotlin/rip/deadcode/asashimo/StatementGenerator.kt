@@ -16,7 +16,7 @@ internal object StatementGenerator {
 
     private val logger = LoggerFactory.getLogger(StatementGenerator::class.java)
 
-    fun create(conn: Connection, config: AsashimoConfig, sql: String, params: Map<String, Any?>): PreparedStatement {
+    fun create(conn: Connection, registry: AsashimoRegistry, sql: String, params: Map<String, Any?>): PreparedStatement {
         if (params.isEmpty()) return conn.prepareStatement(sql)
 
         // TODO refactoring for better readability and performance
@@ -78,20 +78,20 @@ internal object StatementGenerator {
                 is BigInteger -> stmt.setBigDecimal(i + 1, param.toBigDecimal())
 
                 else -> {
-                    when (config.java8dateConversionStrategy) {
+                    when (registry.config.java8dateConversionStrategy) {
                         RAW -> stmt.setObject(i + 1, param)
                         CONVERT -> {
                             stmt.setObject(i + 1, when (param) {
                                 is ZonedDateTime -> {
                                     Timestamp.valueOf(
-                                            param.withZoneSameInstant(config.databaseZoneOffset).toLocalDateTime())
+                                            param.withZoneSameInstant(registry.config.databaseZoneOffset).toLocalDateTime())
                                 }
                                 is OffsetDateTime -> {
                                     Timestamp.valueOf(
-                                            param.withOffsetSameInstant(config.databaseZoneOffset).toLocalDateTime())
+                                            param.withOffsetSameInstant(registry.config.databaseZoneOffset).toLocalDateTime())
                                 }
                                 is OffsetTime -> {
-                                    Time.valueOf(param.withOffsetSameInstant(config.databaseZoneOffset).toLocalTime())
+                                    Time.valueOf(param.withOffsetSameInstant(registry.config.databaseZoneOffset).toLocalTime())
                                 }
                                 is LocalDateTime -> Timestamp.valueOf(param)
                                 is LocalDate -> java.sql.Date.valueOf(param)
@@ -102,11 +102,11 @@ internal object StatementGenerator {
                         }
                         CONVERT_NONLOCAL -> {
                             stmt.setObject(i + 1, when (param) {
-                                is ZonedDateTime -> param.withZoneSameInstant(config.databaseZoneOffset)
+                                is ZonedDateTime -> param.withZoneSameInstant(registry.config.databaseZoneOffset)
                                 is OffsetDateTime -> {
-                                    param.withOffsetSameInstant(config.databaseZoneOffset).toLocalDateTime()
+                                    param.withOffsetSameInstant(registry.config.databaseZoneOffset).toLocalDateTime()
                                 }
-                                is OffsetTime -> param.with(config.databaseZoneOffset).toLocalTime()
+                                is OffsetTime -> param.with(registry.config.databaseZoneOffset).toLocalTime()
                                 else -> param
                             })
                         }

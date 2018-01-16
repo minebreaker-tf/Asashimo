@@ -70,20 +70,15 @@ internal abstract class AbstractConnector(
     override fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause {
         val params = mutableMapOf<String, Any?>()
         block(params)
-        return WithClauseImpl(getConnection(), registry.config, ::resetDataSourceCallback, params, registry.executor)
+        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
     }
 
     override fun with(params: Map<String, Any>): WithClause {
-        return WithClauseImpl(getConnection(), registry.config, ::resetDataSourceCallback, params, registry.executor)
+        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
     }
 
     override fun <T> use(block: UseClause.() -> T): T {
-        return WithClauseImpl(
-                getConnection(),
-                registry.config,
-                ::resetDataSourceCallback,
-                mapOf(),
-                registry.executor).use(block)
+        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).use(block)
     }
 
     override fun <T> useLazy(block: UseClause.() -> T): Supplier<T> {
@@ -98,12 +93,7 @@ internal abstract class AbstractConnector(
     }
 
     override fun <T> transactional(block: UseClause.() -> T): T {
-        return WithClauseImpl(
-                getConnection(),
-                registry.config,
-                ::resetDataSourceCallback,
-                mapOf(),
-                registry.executor).transactional(block)
+        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).transactional(block)
     }
 
     override fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T> {
