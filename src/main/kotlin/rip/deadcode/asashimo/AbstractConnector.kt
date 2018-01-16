@@ -8,8 +8,7 @@ import java.util.function.Supplier
 import kotlin.reflect.KClass
 
 internal abstract class AbstractConnector(
-        private val config: AsashimoConfig,
-        private val defaultExecutor: ListeningExecutorService) : Connector {
+        private val registry: AsashimoRegistry) : Connector {
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         return use { fetch(sql, cls, resultMapper) }
@@ -33,7 +32,7 @@ internal abstract class AbstractConnector(
             cls: KClass<T>,
             resultMapper: ((ResultSet) -> T)?,
             executorService: ListeningExecutorService?): ListenableFuture<T> {
-        return (executorService ?: defaultExecutor).submit<T> {
+        return (executorService ?: registry.executor).submit<T> {
             use { fetch(sql, cls, resultMapper) }
         }
     }
@@ -43,7 +42,7 @@ internal abstract class AbstractConnector(
             cls: KClass<T>,
             resultMapper: ((ResultSet) -> T)?,
             executorService: ListeningExecutorService?): ListenableFuture<List<T>> {
-        return (executorService ?: defaultExecutor).submit<List<T>> {
+        return (executorService ?: registry.executor).submit<List<T>> {
             use { fetchAll(sql, cls, resultMapper) }
         }
     }
@@ -57,13 +56,13 @@ internal abstract class AbstractConnector(
     }
 
     override fun execAsync(sql: String, executorService: ListeningExecutorService?): ListenableFuture<Int> {
-        return (executorService ?: defaultExecutor).submit<Int> {
+        return (executorService ?: registry.executor).submit<Int> {
             use { exec(sql) }
         }
     }
 
     override fun execLargeAsync(sql: String, executorService: ListeningExecutorService?): ListenableFuture<Long> {
-        return (executorService ?: defaultExecutor).submit<Long> {
+        return (executorService ?: registry.executor).submit<Long> {
             use { execLarge(sql) }
         }
     }
@@ -71,15 +70,20 @@ internal abstract class AbstractConnector(
     override fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause {
         val params = mutableMapOf<String, Any?>()
         block(params)
-        return WithClauseImpl(getConnection(), config, ::resetDataSourceCallback, params, defaultExecutor)
+        return WithClauseImpl(getConnection(), registry.config, ::resetDataSourceCallback, params, registry.executor)
     }
 
     override fun with(params: Map<String, Any>): WithClause {
-        return WithClauseImpl(getConnection(), config, ::resetDataSourceCallback, params, defaultExecutor)
+        return WithClauseImpl(getConnection(), registry.config, ::resetDataSourceCallback, params, registry.executor)
     }
 
     override fun <T> use(block: UseClause.() -> T): T {
-        return WithClauseImpl(getConnection(), config, ::resetDataSourceCallback, mapOf(), defaultExecutor).use(block)
+        return WithClauseImpl(
+                getConnection(),
+                registry.config,
+                ::resetDataSourceCallback,
+                mapOf(),
+                registry.executor).use(block)
     }
 
     override fun <T> useLazy(block: UseClause.() -> T): Supplier<T> {
@@ -88,14 +92,18 @@ internal abstract class AbstractConnector(
 
     override fun <T> useAsync(
             executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
-        return (executorService ?: defaultExecutor).submit<T> {
+        return (executorService ?: registry.executor).submit<T> {
             use(block)
         }
     }
 
     override fun <T> transactional(block: UseClause.() -> T): T {
         return WithClauseImpl(
-                getConnection(), config, ::resetDataSourceCallback, mapOf(), defaultExecutor).transactional(block)
+                getConnection(),
+                registry.config,
+                ::resetDataSourceCallback,
+                mapOf(),
+                registry.executor).transactional(block)
     }
 
     override fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T> {
@@ -104,7 +112,7 @@ internal abstract class AbstractConnector(
 
     override fun <T> transactionalAsync(
             executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
-        return (executorService ?: defaultExecutor).submit<T> {
+        return (executorService ?: registry.executor).submit<T> {
             transactional(block)
         }
     }

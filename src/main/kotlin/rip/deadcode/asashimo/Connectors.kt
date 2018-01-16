@@ -13,19 +13,23 @@ object Connectors {
 
     @JvmOverloads
     fun newInstance(dataSource: DataSource, config: AsashimoConfig = AsashimoConfig()): Connector {
-        return if (config.resetDataSourceWhenExceptionOccurred) {
-            ResettingConnector({ dataSource }, config, jvmUniqueExecutor)
-        } else {
-            DefaultConnector(dataSource, config, jvmUniqueExecutor)
-        }
+        return newInstance({ dataSource }, config)
     }
 
     @JvmOverloads
     fun newInstance(dataSourceFactory: () -> DataSource, config: AsashimoConfig = AsashimoConfig()): Connector {
         return if (config.resetDataSourceWhenExceptionOccurred) {
-            ResettingConnector(dataSourceFactory, config, jvmUniqueExecutor)
+            ResettingConnector(AsashimoRegistry(dataSourceFactory, config, jvmUniqueExecutor))
         } else {
-            DefaultConnector(dataSourceFactory(), config, jvmUniqueExecutor)
+            DefaultConnector(AsashimoRegistry(dataSourceFactory, config, jvmUniqueExecutor))
+        }
+    }
+
+    fun newInstance(config: AsashimoConfig, registry: AsashimoRegistry): Connector {
+        return if (config.resetDataSourceWhenExceptionOccurred) {
+            ResettingConnector(registry)
+        } else {
+            ResettingConnector(registry)
         }
     }
 

@@ -1,16 +1,12 @@
 package rip.deadcode.asashimo
 
-import com.google.common.util.concurrent.ListeningExecutorService
 import java.sql.Connection
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.sql.DataSource
 
 internal class ResettingConnector(
-        private val dataSourceFactory: () -> DataSource,
-        config: AsashimoConfig,
-        defaultExecutor: ListeningExecutorService) : AbstractConnector(config, defaultExecutor) {
+        private val registry: AsashimoRegistry) : AbstractConnector(registry) {
 
-    private var dataSource = dataSourceFactory()
+    private var dataSource = registry.dataSourceFactory()
     private val resetDataSource = AtomicBoolean(false)
 
     override fun resetDataSourceCallback() {
@@ -20,7 +16,7 @@ internal class ResettingConnector(
     override fun getConnection(): Connection {
         synchronized(dataSource) {
             if (resetDataSource.get()) {
-                dataSource = dataSourceFactory()
+                dataSource = registry.dataSourceFactory()
                 resetDataSource.set(false)
             }
             return dataSource.connection
