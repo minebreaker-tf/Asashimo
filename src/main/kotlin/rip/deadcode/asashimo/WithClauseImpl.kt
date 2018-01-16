@@ -19,6 +19,10 @@ internal class WithClauseImpl(
         return use { Runner.fetch(conn, registry, sql, cls, resultMapper = resultMapper, params = params) }
     }
 
+    override fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T? {
+        return use { Runner.fetchMaybe(conn, registry, sql, cls, resultMapper = resultMapper, params = params) }
+    }
+
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
         return use { Runner.fetchAll(conn, registry, sql, cls, resultMapper = resultMapper, params = params) }
     }

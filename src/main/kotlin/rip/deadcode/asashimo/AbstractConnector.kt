@@ -14,6 +14,10 @@ internal abstract class AbstractConnector(
         return use { fetch(sql, cls, resultMapper) }
     }
 
+    override fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T? {
+        return use { fetchMaybe(sql, cls, resultMapper) }
+    }
+
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
         return use { fetchAll(sql, cls, resultMapper) }
     }

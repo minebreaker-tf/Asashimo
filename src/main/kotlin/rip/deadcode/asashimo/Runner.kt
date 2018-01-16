@@ -25,6 +25,25 @@ internal object Runner {
         return resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
     }
 
+    fun <T : Any> fetchMaybe(
+            conn: Connection,
+            registry: AsashimoRegistry,
+            sql: String,
+            cls: KClass<T>,
+            params: Map<String, Any?> = mapOf(),
+            resultMapper: ((ResultSet) -> T)? = null): T? {
+
+        val stmt = StatementGenerator.create(conn, registry, sql, params)
+        val rs = stmt.resultSet
+
+        return if (rs == null) {
+            null
+        } else {
+            checkState(rs.next(), "No Result")  // Assure successful
+            resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+        }
+    }
+
     fun <T : Any> fetchAll(
             conn: Connection,
             registry: AsashimoRegistry,

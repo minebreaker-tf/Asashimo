@@ -19,6 +19,15 @@ internal class UseClauseImpl(
         }
     }
 
+    override fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T? {
+        try {
+            return Runner.fetchMaybe(connection, registry, sql, cls, resultMapper = resultMapper, params = params)
+        } catch (e: Exception) {
+            connectionResetCallback()
+            throw e
+        }
+    }
+
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
         try {
             return Runner.fetchAll(connection, registry, sql, cls, resultMapper = resultMapper, params = params)

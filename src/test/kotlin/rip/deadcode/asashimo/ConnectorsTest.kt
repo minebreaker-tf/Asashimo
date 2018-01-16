@@ -269,4 +269,38 @@ class ConnectorsTest {
         assertThat(user.name).isEqualTo("John")
     }
 
+    @Test(expected = AsashimoException::class)
+    fun genericTest17() {
+        connector!!.use {
+            exec("create table user(id int, name varchar)")
+            fetch("select * from user", User::class)
+        }
+    }
+
+    @Test
+    fun genericTest18() {
+        val users = connector!!.use {
+            exec("create table user(id int, name varchar)")
+            fetchAll("select * from user", User::class)
+        }
+
+        assertThat(users).isEmpty()
+    }
+
+    @Test
+    fun genericTest19() {
+        val user = connector!!.use {
+            exec("create table user(id int, name varchar)")
+            fetchMaybe("select * from user", User::class)
+        }
+        assertThat(user).isNull()
+    }
+
+    @Test
+    fun genericTest20() {
+        connector!!.exec("create table user(id int, name varchar)")
+        val user = connector!!.fetchMaybe("select * from user", User::class)
+        assertThat(user).isNull()
+    }
+
 }
