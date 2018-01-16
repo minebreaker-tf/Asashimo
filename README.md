@@ -29,7 +29,7 @@ repositories {
     }
 }
 dependencies {
-    compile 'rip.deadcode:asashimo:0.2.1'
+    compile 'rip.deadcode:asashimo:0.2.2'
 }
 ```
 
