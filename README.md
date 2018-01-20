@@ -2,6 +2,8 @@
 
 Thin JDBC wrapper for Kotlin
 
+![](https://img.shields.io/badge/maturity-experimental-green.png)
+
 * Kotlin-friendly
 * Fluent API
 * Plain SQL rather than DSL
