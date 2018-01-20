@@ -77,7 +77,7 @@ bintray {
         repo = 'test'
         name = 'asashimo'
         licenses = ['MIT']
-        vcsUrl = 'https://minebreaker_tf@bitbucket.org/minebreaker_tf/asashimo.git'
+        vcsUrl = 'https://bitbucket.org/minebreaker_tf/asashimo.git'
     }
     publications = ['bintrayPublication']
 }
