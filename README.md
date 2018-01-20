@@ -4,6 +4,7 @@ Thin JDBC wrapper for Kotlin
 
 [![CircleCI](https://circleci.com/bb/minebreaker_tf/asashimo.svg?style=svg&circle-token=c3b0779aa16a3bcdb21e4e72ab8575f916ca2b5a)](https://circleci.com/bb/minebreaker_tf/asashimo)
 ![](https://img.shields.io/badge/maturity-experimental-green.svg)
+![](https://img.shields.io/badge/license-MIT-green.svg)
 
 * Kotlin-friendly
 * Fluent API
@@ -196,3 +197,8 @@ fun cursorApi() {
                         .getString()
 }
 ```
+
+
+## License
+
+MIT
