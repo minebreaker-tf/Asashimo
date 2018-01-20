@@ -2,7 +2,8 @@
 
 Thin JDBC wrapper for Kotlin
 
-![](https://img.shields.io/badge/maturity-experimental-green.png)
+[![CircleCI](https://circleci.com/bb/minebreaker_tf/asashimo.svg?style=svg)](https://circleci.com/bb/minebreaker_tf/asashimo)
+![](https://img.shields.io/badge/maturity-experimental-green.svg)
 
 * Kotlin-friendly
 * Fluent API
