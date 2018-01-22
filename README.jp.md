@@ -1,19 +1,19 @@
-# Asashimo
+# アサシモ
 
-Thin JDBC wrapper for Kotlin
+Kotlin向けJDBCラッパー
 
-[日本語](README.jp.md)
+[English](README.md)
 
 [![CircleCI](https://circleci.com/bb/minebreaker_tf/asashimo.svg?style=svg&circle-token=c3b0779aa16a3bcdb21e4e72ab8575f916ca2b5a)](https://circleci.com/bb/minebreaker_tf/asashimo)
 ![](https://img.shields.io/badge/maturity-experimental-green.svg)
 ![](https://img.shields.io/badge/license-MIT-green.svg)
 
-* Kotlin-friendly
-* Fluent API
-* Plain SQL rather than DSL
-* Named parameter support
-* List spreading
-* Async API with Google Guava `ListenableFuture`
+* Kotlin向け
+* 流暢なAPI
+* DSLよりも通常のSQL
+* 名前付きパラメーター
+* リスト展開
+* Google Guavaの`ListenableFuture`を使った非同期API
 
 ```kotlin
 fun sample(dataSource: javax.sql.DataSource) {
@@ -40,9 +40,9 @@ dependencies {
 ```
 
 
-## How to use
+## 使い方
 
-*See `rip.deadcode.asashimo.ConnectorsTest` for more samples*
+*`rip.deadcode.asashimo.ConnectorsTest`を参照してください*
 
 #### select
 
@@ -58,10 +58,10 @@ val users: List<User> = connector.fetchAll("select id, name from user", User::cl
 val updatedRows = connector.exec("update user set name = 'John'")
 ```
 
-#### Multiple operations
+#### 複数の操作
 
-By default, `Connector` creates a new `java.sql.Connection` every time called.
-To prevent this behavior, call `use()` or `transactional()`.
+デフォルトでは、`Connector`は呼ばれるたびに新しい`java.sql.Connection`を作成します。
+これを避けるために、`use()`か`transactional()`を使ってください。
 
 ```kotlin
 val user: User = connector!!.use {
@@ -73,7 +73,7 @@ val user: User = connector!!.use {
 
 #### Transaction
 
-`Connector.transactional { ... }` is executed in a same transaction.
+`Connector.transactional { ... }`は同じトランザクション内で実行されます。
 
 ```kotlin
 try {
@@ -87,11 +87,11 @@ try {
 }
 ```
 
-#### Named parameters
+#### 名前付きパラメーター
 
-You can use named parameters via `with()` method.
+`with()`メソッドから、名前付きパラメーターを使用できます。
 
-DSL-like syntax
+##### DSL風シンタックス
 
 ```kotlin
 val user = connector.with {
@@ -100,7 +100,7 @@ val user = connector.with {
 }.fetch("select * from user where name = :name", User::class)
 ```
 
-Map
+##### Map
 
 ```kotlin
 val user = connector
@@ -108,10 +108,10 @@ val user = connector
         .fetch("select * from user where name = :name", User::class)
 ```
 
-Instead, you can't use positional parameters.
+その代わりに、位置パラメーターは使えません。
 
 
-#### Collection spreading
+#### コレクション展開
 
 ```kotlin
 val users = connector.with {
@@ -119,13 +119,13 @@ val users = connector.with {
 }.fetchAll("select * from user where id in (:ids)", User::class)
 ```
 
-Don't forget braces are mandatory.
+括弧は必須です。
 
 
-#### Async API
+#### 非同期API
 
-Asashimo provides async API with `ListenableFuture` of
-[Google Guava](https://github.com/google/guava).
+アサシモは[Google Guava](https://github.com/google/guava)の
+`ListenableFuture`を使って非同期APIを提供しています。
 
 [ListenableFutureExplained](https://github.com/google/guava/wiki/ListenableFutureExplained)
 
@@ -139,69 +139,12 @@ val userFuture: ListenableFuture<User> = connector
         }
 ```
 
-If `ListeningExecutorService` in arguments is omitted,
-the default executor pooled by Asashimo is used.
+引数の`ListeningExecutorService`が省略された場合、
+アサシモがプールするデフォルトの`Executor`が使用されます。
 
-(This will be configurable in the future versions)
-
-
-## TODOs
-
-* Java 8 Date and Time API
-* API for Java
-* Savepoint
-* Batch
-* Map API (fetch values with map interface)
-* Fetch interface API
-* JPA annotation compatibility (`@Id`, `@Column`)
-* class to parameter binding, based on JPA annotations / field names
-* Parameter binding in `use{}` clause
-* `fetchAll()` and `fetchStream()` with lazy list, using cursor
-* `persist(KClass)`, `find(id: Any, KClass)`
-* Positional parameter support
-* Documentation
-* More tests
-
-```kotlin
-fun jpaAnnotationApi() {
-    @Entity
-    data class User(
-        @Id
-        @Column(name="user_id")
-        val id: Int,
-        @Column(name="user_name")
-        val name: String
-    )
-    var user = connector.find(123, User::class)
-    user = User(456, "John")
-    connector.persist(user)
-}
-```
-
-```kotlin
-fun mapApi() {
-    val result: Map<String, SqlValue> = connector.fetch(
-            "select 'hello, world' as message from dual", Map::class)
-    assertThat(result["message"].asString()).isEqualTo("hello, world")
-}
-```
-
-```kotlin
-fun cursorApi() {
-
-    class CustomCursor(private val rs: ResultSet) {
-        fun getString(): String = rs.getString(1)
-    }
-
-    val connector = Connectors.newInstance(dataSource, config, createCursor)
-    val data = connector.cursor()
-                        .getString()
-    val data = connector.cursor(CustomCusor::class)
-                        .getString()
-}
-```
+(このあたりの動作は将来のバージョンで改善予定です)
 
 
-## License
+## ライセンス
 
 MIT
