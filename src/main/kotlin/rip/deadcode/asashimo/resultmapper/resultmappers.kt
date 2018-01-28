@@ -2,14 +2,9 @@
 
 package rip.deadcode.asashimo.resultmapper
 
-import com.google.common.annotations.VisibleForTesting
-import com.google.common.base.CaseFormat.*
 import org.slf4j.LoggerFactory
 import rip.deadcode.asashimo.AsashimoConfig
-import rip.deadcode.asashimo.AsashimoException
-import rip.deadcode.asashimo.AsashimoRegistry
 import rip.deadcode.asashimo.Java8DateConversionStrategy.*
-import java.beans.Introspector
 import java.io.InputStream
 import java.io.Reader
 import java.math.BigDecimal
@@ -22,7 +17,7 @@ import kotlin.reflect.KClass
 private val logger = LoggerFactory.getLogger(GeneralResultMapper::class.java.`package`.name)
 
 // TODO refactoring everything
-private fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>, config: AsashimoConfig): T? {
+internal fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>, config: AsashimoConfig): T? {
     @Suppress("IMPLICIT_CAST_TO_ANY")
     return when (type) {
     // Directly provided by JDBC driver
@@ -91,7 +86,6 @@ private fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>, config: 
 /**
  * JDBC型が要求されていた場合、対応するメソッドを使用して値を取得する.
  */
-@VisibleForTesting
 internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet, config: AsashimoConfig): T? {
     return try {
         val result = resultSet.getUnknown(1, cls, config)
@@ -106,112 +100,4 @@ internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet, 
             }
         }
     }
-}
-
-object ConstructorResultMapper : GeneralResultMapper {
-
-    private val logger = LoggerFactory.getLogger(ConstructorResultMapper::class.java)
-
-    override fun <T : Any> map(registry: AsashimoRegistry, cls: KClass<T>, resultSet: ResultSet): T {
-        return convertToBasicType(cls, resultSet, registry.config)
-                ?: convertWithAllArgsConstructor(cls, resultSet, registry.config)
-                ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
-    }
-
-    @VisibleForTesting
-    internal fun <T : Any> convertWithAllArgsConstructor(
-            cls: KClass<T>, resultSet: ResultSet, config: AsashimoConfig): T? {
-
-        return try {
-            val resultSize = resultSet.metaData.columnCount
-            // cls.constructors requires kotlin-reflect library. Use old Java reflection.
-            val constructors = cls.java.declaredConstructors
-
-            val sameSizeConstructors = constructors.filter { it.parameterCount == resultSize }
-            for (constructor in sameSizeConstructors) {
-                // TODO check metadata to infer appropriate constructor
-                // needs more wise way
-                try {
-                    val types = constructor.parameterTypes
-                    val args = arrayOfNulls<Any>(types.size)
-                    for ((i, type) in types.withIndex()) {
-                        args[i] = resultSet.getUnknown<Any>(i + 1, type.kotlin, config) ?:
-                                resultSet.getObject(i + 1, type)
-                    }
-                    if (!constructor.isAccessible) constructor.isAccessible = true
-                    return constructor.newInstance(*args) as T
-                } catch (e: Exception) {
-                    // Just ignore an exception and try next constructor
-                    when (e) {
-                        is SQLException -> throw e
-                        else -> logger.trace("Failed to instantiate", e)
-                    }
-                }
-            }
-
-            // Couldn't find the constructor to use.
-            null
-        } catch (e: Exception) {
-            when (e) {
-                is SQLException -> throw e
-                else -> {
-                    logger.trace("Failed to instantiate using all constructors.", e)
-                    null
-                }
-            }
-        }
-    }
-
-}
-
-object BeanResultMapper : GeneralResultMapper {
-
-    private val logger = LoggerFactory.getLogger(BeanResultMapper::class.java)
-
-    override fun <T : Any> map(registry: AsashimoRegistry, cls: KClass<T>, resultSet: ResultSet): T {
-        return convertToBasicType(cls, resultSet, registry.config)
-                ?: convertAsBean(cls, resultSet)
-                ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
-    }
-
-    @VisibleForTesting
-    internal fun <T : Any> convertAsBean(cls: KClass<T>, resultSet: ResultSet): T? {
-
-        return try {
-            val targetInstance = cls.java.newInstance()
-            val meta = resultSet.metaData
-            val columnNames = (1..meta.columnCount).map { meta.getColumnName(it) }
-
-            // Via methods
-            val properties = Introspector.getBeanInfo(cls.java).propertyDescriptors
-            for (columnName in columnNames) {
-                val property = properties.first { it.name == toLowerCamel(columnName) }
-                val writer = property.writeMethod
-                if (!writer.isAccessible) writer.isAccessible = true
-                writer.invoke(targetInstance, resultSet.getObject(columnName, property.propertyType))
-                // TODO 全てのフィールドが適切に設定されたかチェック
-            }
-            return targetInstance
-
-            // Via fields
-        } catch (e: Exception) {
-            when (e) {
-                is SQLException -> throw e
-                else -> {
-                    logger.info("Failed during invoking setters.", e)
-                    null
-                }
-            }
-        }
-    }
-
-    private fun toLowerCamel(str: String): String {
-        return when {
-            str.contains("_") -> LOWER_UNDERSCORE.to(LOWER_CAMEL, str.toLowerCase())
-            str.contains("-") -> LOWER_HYPHEN.to(LOWER_CAMEL, str.toLowerCase())
-            str.all { it.isUpperCase() } -> str.toLowerCase()
-            else -> UPPER_CAMEL.to(LOWER_CAMEL, str)
-        }
-    }
-
 }

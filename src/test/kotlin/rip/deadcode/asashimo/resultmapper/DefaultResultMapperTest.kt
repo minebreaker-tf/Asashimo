@@ -78,4 +78,20 @@ class DefaultResultMapperTest {
         assertThat(res.name).isNull()
     }
 
+    @Test
+    fun testMap1() {
+        val rs = mock(ResultSet::class.java)
+        val meta = mock(ResultSetMetaData::class.java)
+        `when`(meta.columnCount).thenReturn(2)
+        `when`(meta.getColumnName(1)).thenReturn("id")
+        `when`(meta.getColumnName(2)).thenReturn("name")
+        `when`(rs.metaData).thenReturn(meta)
+        `when`(rs.getString(1)).thenReturn("123")
+        `when`(rs.getString(2)).thenReturn("John")
+
+        val result = MapResultMapper.convertToMap(rs)
+
+        assertThat(result).containsExactly("id", "123", "name", "John")
+    }
+
 }
