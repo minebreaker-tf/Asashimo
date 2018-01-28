@@ -160,6 +160,7 @@ the default executor pooled by Asashimo is used.
 * `persist(KClass)`, `find(id: Any, KClass)`
 * Positional parameter support
 * Understandable error message
+* Caching LexResult
 * Documentation
 * More tests
 
@@ -184,21 +185,6 @@ fun mapApi() {
     val result: Map<String, SqlValue> = connector.fetch(
             "select 'hello, world' as message from dual", Map::class)
     assertThat(result["message"].asString()).isEqualTo("hello, world")
-}
-```
-
-```kotlin
-fun cursorApi() {
-
-    class CustomCursor(private val rs: ResultSet) {
-        fun getString(): String = rs.getString(1)
-    }
-
-    val connector = Connectors.newInstance(dataSource, config, createCursor)
-    val data = connector.cursor()
-                        .getString()
-    val data = connector.cursor(CustomCusor::class)
-                        .getString()
 }
 ```
 
