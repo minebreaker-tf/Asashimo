@@ -144,6 +144,17 @@ the default executor pooled by Asashimo is used.
 
 (This will be configurable in the future versions)
 
+#### Map API
+
+```kotlin
+fun mapApi() {
+    connector = Connectors.newInstance(dataSource = dataSource, defaultResultMapper = MapResultMapper)
+    val result: Map<String, String> = connector.fetch(
+            "select 'hello, world' as message from dual", Map::class)
+    assertThat(result).containsExactly("message", "hello, world")
+}
+```
+
 
 ## TODOs
 
@@ -151,7 +162,6 @@ the default executor pooled by Asashimo is used.
 * API for Java
 * Savepoint
 * Batch
-* Map API (fetch values with map interface)
 * Fetch interface API
 * JPA annotation compatibility (`@Id`, `@Column`)
 * class to parameter binding, based on JPA annotations / field names
@@ -177,14 +187,6 @@ fun jpaAnnotationApi() {
     var user = connector.find(123, User::class)
     user = User(456, "John")
     connector.persist(user)
-}
-```
-
-```kotlin
-fun mapApi() {
-    val result: Map<String, SqlValue> = connector.fetch(
-            "select 'hello, world' as message from dual", Map::class)
-    assertThat(result["message"].asString()).isEqualTo("hello, world")
 }
 ```
 
