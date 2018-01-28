@@ -159,6 +159,7 @@ the default executor pooled by Asashimo is used.
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * `persist(KClass)`, `find(id: Any, KClass)`
 * Positional parameter support
+* Understandable error message
 * Documentation
 * More tests
 
