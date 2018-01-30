@@ -321,4 +321,39 @@ class ConnectorsTest {
         assertThat(result).containsExactly("id", "1", "name", "John")
     }
 
+    @Test
+    fun genericTest22() {
+        val user = connector!!.with {
+            it["id"] = 999
+            it["name"] = "XXX"
+        }.use {
+            exec("create table user(id int, name varchar)")
+            with("id" to 1)
+            with("name" to "John")
+            exec("insert into user values(:id, :name)")
+            fetch("select * from user", User::class, userMapper)
+        }
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest23() {
+        val user = connector!!.with {
+            it["id"] = 999
+            it["name"] = "XXX"
+        }.use {
+            exec("create table user(id int, name varchar)")
+            with {
+                it["id"] = 1
+                it["name"] = "John"
+            }
+            exec("insert into user values(:id, :name)")
+            fetch("select * from user", User::class, userMapper)
+        }
+
+        assertThat(user.id).isEqualTo(1)
+        assertThat(user.name).isEqualTo("John")
+    }
 }

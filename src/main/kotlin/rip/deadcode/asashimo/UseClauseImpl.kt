@@ -10,9 +10,13 @@ internal class UseClauseImpl(
         private val connectionResetCallback: () -> Unit,
         private val params: Map<String, Any?> = mapOf()) : UseClause {
 
+    private val internalParams: MutableMap<String, Any?> = mutableMapOf()
+
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         try {
-            return Runner.fetch(connection, registry, sql, cls, resultMapper = resultMapper, params = params)
+            return Runner.fetch(connection, registry, sql, cls,
+                                resultMapper = resultMapper,
+                                params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
@@ -21,7 +25,9 @@ internal class UseClauseImpl(
 
     override fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T? {
         try {
-            return Runner.fetchMaybe(connection, registry, sql, cls, resultMapper = resultMapper, params = params)
+            return Runner.fetchMaybe(connection, registry, sql, cls,
+                                     resultMapper = resultMapper,
+                                     params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
@@ -30,7 +36,9 @@ internal class UseClauseImpl(
 
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
         try {
-            return Runner.fetchAll(connection, registry, sql, cls, resultMapper = resultMapper, params = params)
+            return Runner.fetchAll(connection, registry, sql, cls,
+                                   resultMapper = resultMapper,
+                                   params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
@@ -39,7 +47,7 @@ internal class UseClauseImpl(
 
     override fun exec(sql: String): Int {
         try {
-            return Runner.exec(connection, registry, sql, params = params)
+            return Runner.exec(connection, registry, sql, params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
@@ -48,11 +56,19 @@ internal class UseClauseImpl(
 
     override fun execLarge(sql: String): Long {
         try {
-            return Runner.execLarge(connection, registry, sql, params = params)
+            return Runner.execLarge(connection, registry, sql, params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
         }
+    }
+
+    override fun with(binding: Pair<String, Any?>) {
+        internalParams += binding
+    }
+
+    override fun with(block: (MutableMap<String, Any?>) -> Unit) {
+        block(internalParams)
     }
 
 }
