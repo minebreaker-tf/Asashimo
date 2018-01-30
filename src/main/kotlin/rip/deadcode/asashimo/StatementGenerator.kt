@@ -17,15 +17,27 @@ internal object StatementGenerator {
     private val logger = LoggerFactory.getLogger(StatementGenerator::class.java)
 
     fun create(conn: Connection, registry: AsashimoRegistry, sql: String, params: Map<String, Any?>): PreparedStatement {
-        if (params.isEmpty()) return conn.prepareStatement(sql)
 
-        // TODO refactoring for better readability and performance
+        if (params.isEmpty()) return conn.prepareStatement(sql)
 
         val tokens = lex(sql)
         checkState(!tokens.contains("?"), "Use named parameter instead of positional parameter.")
 
-        var resultTokens = listOf<String>()
-        var paramsToSet = listOf<Any?>()
+        val (sqlToExec, paramsToSet) = convertTokensToParamSet(tokens, params)
+        logger.debug("SQL: {}", sqlToExec)
+
+        val stmt = conn.prepareStatement(sqlToExec)
+        setParams(registry, stmt, paramsToSet)
+        return stmt
+    }
+
+    private data class ConversionResult(val sql: String, val params: List<Any?>)
+
+    private fun convertTokensToParamSet(tokens: List<String>, params: Map<String, Any?>): ConversionResult {
+
+        // TODO refactoring
+        val resultTokens = mutableListOf<String>()
+        val paramsToSet = mutableListOf<Any?>()
         for (token in tokens) {
             var found = false
             for ((key, value) in params) {
@@ -49,8 +61,13 @@ internal object StatementGenerator {
         }
 
         val sqlToExec = resultTokens.joinToString(separator = " ")
-        logger.debug("SQL: {}", sqlToExec)
-        val stmt = conn.prepareStatement(sqlToExec)
+        return ConversionResult(sqlToExec, paramsToSet)
+    }
+
+    private fun setParams(registry: AsashimoRegistry, stmt: PreparedStatement, paramsToSet: List<Any?>) {
+
+        // TODO refactoring for better readability and performance
+
         for ((i, param) in paramsToSet.withIndex()) {
             when (param) {
                 is java.sql.Array -> stmt.setArray(i + 1, param)
@@ -114,8 +131,6 @@ internal object StatementGenerator {
                 }
             }
         }
-
-        return stmt
     }
 
     @VisibleForTesting
