@@ -1,10 +1,10 @@
 package rip.deadcode.asashimo.resultmapper
 
 import com.google.common.annotations.VisibleForTesting
-import com.google.common.base.CaseFormat
 import org.slf4j.LoggerFactory
 import rip.deadcode.asashimo.AsashimoException
 import rip.deadcode.asashimo.AsashimoRegistry
+import rip.deadcode.asashimo.utils.toLowerCamel
 import java.beans.Introspector
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -32,6 +32,7 @@ object BeanResultMapper : GeneralResultMapper {
             val properties = Introspector.getBeanInfo(cls.java).propertyDescriptors
             for (columnName in columnNames) {
                 val property = properties.first { it.name == toLowerCamel(columnName) }
+                // TODO respect transient
                 val writer = property.writeMethod
                 if (!writer.isAccessible) writer.isAccessible = true
                 writer.invoke(targetInstance, resultSet.getObject(columnName, property.propertyType))
@@ -48,15 +49,6 @@ object BeanResultMapper : GeneralResultMapper {
                     null
                 }
             }
-        }
-    }
-
-    private fun toLowerCamel(str: String): String {
-        return when {
-            str.contains("_") -> CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, str.toLowerCase())
-            str.contains("-") -> CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, str.toLowerCase())
-            str.all { it.isUpperCase() } -> str.toLowerCase()
-            else -> CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, str)
         }
     }
 
