@@ -3,17 +3,21 @@ package rip.deadcode.asashimo
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
 import org.h2.jdbcx.JdbcDataSource
-import org.junit.After
+import org.hamcrest.CoreMatchers.isA
+import org.junit.*
 import org.junit.Assert.fail
-import org.junit.Before
-import org.junit.Ignore
-import org.junit.Test
+import org.junit.rules.ExpectedException
 import rip.deadcode.asashimo.resultmapper.MapResultMapper
 import java.sql.ResultSet
 
 class ConnectorsTest {
 
     private var connector: Connector? = null
+
+    @Suppress("RedundantVisibilityModifier")
+    @JvmField
+    @Rule
+    public var expectedException: ExpectedException = ExpectedException.none()
 
     @Before
     fun setUp() {
@@ -270,8 +274,12 @@ class ConnectorsTest {
         assertThat(user.name).isEqualTo("John")
     }
 
-    @Test(expected = AsashimoException::class)
+    @Test
     fun genericTest17() {
+
+        expectedException.expect(isA(AsashimoException::class.java))
+        expectedException.expectCause(isA(AsashimoNoResultException::class.java))
+
         connector!!.use {
             exec("create table user(id int, name varchar)")
             fetch("select * from user", User::class)
@@ -327,12 +335,12 @@ class ConnectorsTest {
             it["id"] = 999
             it["name"] = "XXX"
         }.use {
-            exec("create table user(id int, name varchar)")
-            with("id" to 1)
-            with("name" to "John")
-            exec("insert into user values(:id, :name)")
-            fetch("select * from user", User::class, userMapper)
-        }
+                    exec("create table user(id int, name varchar)")
+                    with("id" to 1)
+                    with("name" to "John")
+                    exec("insert into user values(:id, :name)")
+                    fetch("select * from user", User::class, userMapper)
+                }
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -344,16 +352,30 @@ class ConnectorsTest {
             it["id"] = 999
             it["name"] = "XXX"
         }.use {
-            exec("create table user(id int, name varchar)")
-            with {
-                it["id"] = 1
-                it["name"] = "John"
-            }
-            exec("insert into user values(:id, :name)")
-            fetch("select * from user", User::class, userMapper)
-        }
+                    exec("create table user(id int, name varchar)")
+                    with {
+                        it["id"] = 1
+                        it["name"] = "John"
+                    }
+                    exec("insert into user values(:id, :name)")
+                    fetch("select * from user", User::class, userMapper)
+                }
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
     }
+
+    @Test
+    fun genericTest24() {
+
+        expectedException.expect(isA(AsashimoException::class.java))
+        expectedException.expectCause(isA(AsashimoNonUniqueResultException::class.java))
+
+        connector!!.use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John'), (2, 'Jack')")
+            fetch("select * from user", User::class, userMapper)
+        }
+    }
+
 }

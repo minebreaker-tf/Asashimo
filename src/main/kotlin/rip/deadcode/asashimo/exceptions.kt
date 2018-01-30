@@ -1,6 +1,10 @@
 package rip.deadcode.asashimo
 
-class AsashimoException(
+open class AsashimoException(
         message: String,
         cause: Exception? = null
 ) : RuntimeException(message, cause)
+
+class AsashimoNoResultException : AsashimoException("ResultSet was empty.")
+
+class AsashimoNonUniqueResultException : AsashimoException("Method `fetch` was called, but the ResultSet returned multiple rows.")

@@ -27,6 +27,9 @@ repositories {
 dependencies {
     compile(
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version",
+
+//            'javax.persistence:javax.persistence-api:2.2',
+
             'com.google.guava:guava:23.6-jre',
             'com.google.code.findbugs:jsr305:3.0.2',
             'org.slf4j:slf4j-api:1.7.25',

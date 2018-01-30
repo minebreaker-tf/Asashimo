@@ -17,12 +17,18 @@ internal object Runner {
             resultMapper: ((ResultSet) -> T)? = null): T {
 
         val stmt = StatementGenerator.create(conn, registry, sql, params)
-        val result = stmt.execute()
-        check(result)
+        val execResult = stmt.execute()
+        check(execResult)
 
         val rs = stmt.resultSet
-        checkState(rs.next(), "No Result")  // Assure successful
-        return resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+        val hadValue = rs.next()
+        if (!hadValue) throw AsashimoNoResultException() // Assure successful
+
+        val result = resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+
+        if (rs.next()) throw AsashimoNonUniqueResultException()
+
+        return result
     }
 
     fun <T : Any> fetchMaybe(
