@@ -10,3 +10,8 @@ fun toLowerCamel(str: String): String {
         else -> CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, str)
     }
 }
+
+// XXX: DO NOT TRUST
+fun escape(sql: String): String {
+    return sql.replace("'", "''").replace("\\", "\\\\").replace(";", "")
+}

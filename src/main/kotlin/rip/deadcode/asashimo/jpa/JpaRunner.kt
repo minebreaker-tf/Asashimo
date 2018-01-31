@@ -4,6 +4,7 @@ import com.google.common.annotations.Beta
 import rip.deadcode.asashimo.AsashimoRegistry
 import rip.deadcode.asashimo.StatementGenerator
 import rip.deadcode.asashimo.resultmapper.JpaResultMapper
+import rip.deadcode.asashimo.utils.escape
 import java.sql.Connection
 import javax.persistence.NoResultException
 import javax.persistence.NonUniqueResultException
@@ -17,10 +18,9 @@ object JpaRunner {
         val info = JpaIntrospector.introspect(entity)
         val allColumns = listOf(info.idName) + info.columnNames
 
-        // XXX this is terrible and must be refactored
-        // TODO escape params
-        val sql = "insert into ${info.tableName} (${allColumns.joinToString()}) " +
-                "values(${"?, ".repeat(info.columnNames.size)}?)"
+        // TODO this is terrible and must be refactored
+        val sql = "insert into ${escape(info.tableName)} (${escape(allColumns.joinToString())}) " +
+                "values(${escape("?, ".repeat(info.columnNames.size))}?)"
 
         val stmt = conn.prepareStatement(sql)
         StatementGenerator.setParams(registry, stmt, listOf(info.id) + info.columns)
@@ -33,8 +33,8 @@ object JpaRunner {
 
         val clsInfo = JpaIntrospector.introspect(cls)
 
-        val sql = "select ${clsInfo.idName}, ${clsInfo.columnNames.joinToString(", ")} from ${clsInfo.tableName} " +
-                "where ${clsInfo.idName} = ?"
+        val sql = "select ${escape(clsInfo.idName)}, ${escape(clsInfo.columnNames.joinToString(", "))} " +
+                "from ${escape(clsInfo.tableName)} where ${escape(clsInfo.idName)} = ?"
         val stmt = conn.prepareStatement(sql)
         stmt.setObject(1, id)
         stmt.execute()
