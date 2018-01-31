@@ -163,10 +163,8 @@ fun mapApi() {
 * Savepoint
 * Batch
 * Fetch interface API
-* JPA annotation compatibility (`@Id`, `@Column`)
 * class to parameter binding, based on JPA annotations / field names
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
-* `persist(KClass)`, `find(id: Any, KClass)`
 * Upsert support
 * Understandable error message
 * Caching LexResult

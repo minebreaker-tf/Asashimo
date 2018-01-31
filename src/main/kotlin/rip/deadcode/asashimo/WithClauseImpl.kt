@@ -15,16 +15,35 @@ internal class WithClauseImpl(
         private val connectionResetCallback: () -> Unit,
         private val params: Map<String, Any?>) : WithClause {
 
+    private val internalParams: MutableMap<String, Any?> = mutableMapOf()
+
+    override fun with(binding: Pair<String, Any?>) {
+        internalParams += binding
+    }
+
+    override fun with(block: (MutableMap<String, Any?>) -> Unit) {
+        block(internalParams)
+    }
+
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
-        return use { Runner.fetch(conn, registry, sql, cls, resultMapper = resultMapper, params = params) }
+        return use {
+            Runner.fetch(conn, registry, sql, cls,
+                         resultMapper = resultMapper, params = params + internalParams)
+        }
     }
 
     override fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T? {
-        return use { Runner.fetchMaybe(conn, registry, sql, cls, resultMapper = resultMapper, params = params) }
+        return use {
+            Runner.fetchMaybe(conn, registry, sql, cls,
+                              resultMapper = resultMapper, params = params + internalParams)
+        }
     }
 
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
-        return use { Runner.fetchAll(conn, registry, sql, cls, resultMapper = resultMapper, params = params) }
+        return use {
+            Runner.fetchAll(conn, registry, sql, cls,
+                            resultMapper = resultMapper, params = params + internalParams)
+        }
     }
 
     override fun <T : Any> fetchLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): Supplier<T> {
@@ -53,11 +72,11 @@ internal class WithClauseImpl(
     }
 
     override fun exec(sql: String): Int {
-        return use { Runner.exec(conn, registry, sql, params) }
+        return use { Runner.exec(conn, registry, sql, params + internalParams) }
     }
 
     override fun execLarge(sql: String): Long {
-        return use { Runner.execLarge(conn, registry, sql, params) }
+        return use { Runner.execLarge(conn, registry, sql, params + internalParams) }
     }
 
     override fun execAsync(sql: String, executorService: ListeningExecutorService?): ListenableFuture<Int> {
@@ -71,7 +90,7 @@ internal class WithClauseImpl(
     override fun <T> use(block: UseClause.() -> T): T {
         try {
             conn.autoCommit = true
-            return UseClauseImpl(conn, registry, connectionResetCallback, params).block()
+            return UseClauseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
         } catch (e: Exception) {
             // TODO rethrow AsashimoException
             connectionResetCallback()
@@ -104,7 +123,7 @@ internal class WithClauseImpl(
                 throw AsashimoException("Transaction is not available.")
             }
             conn.autoCommit = false
-            val result = UseClauseImpl(conn, registry, connectionResetCallback, params).block()
+            val result = UseClauseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
             conn.commit()
             return result
         } catch (e: Exception) {

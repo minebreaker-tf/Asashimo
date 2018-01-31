@@ -12,6 +12,14 @@ internal class UseClauseImpl(
 
     private val internalParams: MutableMap<String, Any?> = mutableMapOf()
 
+    override fun with(binding: Pair<String, Any?>) {
+        internalParams += binding
+    }
+
+    override fun with(block: (MutableMap<String, Any?>) -> Unit) {
+        block(internalParams)
+    }
+
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         try {
             return Runner.fetch(connection, registry, sql, cls,
@@ -61,14 +69,6 @@ internal class UseClauseImpl(
             connectionResetCallback()
             throw e
         }
-    }
-
-    override fun with(binding: Pair<String, Any?>) {
-        internalParams += binding
-    }
-
-    override fun with(block: (MutableMap<String, Any?>) -> Unit) {
-        block(internalParams)
     }
 
 }
