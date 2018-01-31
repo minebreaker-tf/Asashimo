@@ -92,9 +92,12 @@ internal class WithClauseImpl(
             conn.autoCommit = true
             return UseClauseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
         } catch (e: Exception) {
-            // TODO rethrow AsashimoException
             connectionResetCallback()
-            throw AsashimoException("Exception in use method.", e)
+            if (e is AsashimoException) {
+                throw e
+            } else {
+                throw AsashimoException("Exception in use method.", e)
+            }
         } finally {
             try {
                 conn.close()
@@ -135,7 +138,11 @@ internal class WithClauseImpl(
                 logger.warn(message)
                 throw AsashimoException(message, ex)
             }
-            throw AsashimoException("Exception in transaction.", e)
+            if (e is AsashimoException) {
+                throw e
+            } else {
+                throw AsashimoException("Exception in transaction.", e)
+            }
         } finally {
             try {
                 conn.close()

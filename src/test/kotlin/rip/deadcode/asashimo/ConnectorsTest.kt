@@ -280,8 +280,7 @@ class ConnectorsTest {
     @Test
     fun genericTest17() {
 
-        expectedException.expect(isA(AsashimoException::class.java))
-        expectedException.expectCause(isA(AsashimoNoResultException::class.java))
+        expectedException.expect(isA(AsashimoNoResultException::class.java))
 
         connector!!.use {
             exec("create table user(id int, name varchar)")
@@ -371,13 +370,12 @@ class ConnectorsTest {
     @Test
     fun genericTest24() {
 
-        expectedException.expect(isA(AsashimoException::class.java))
-        expectedException.expectCause(isA(AsashimoNonUniqueResultException::class.java))
+        expectedException.expect(isA(AsashimoNonUniqueResultException::class.java))
 
         connector!!.use {
             exec("create table user(id int, name varchar)")
             exec("insert into user values(1, 'John'), (2, 'Jack')")
-            fetch("select * from user", User::class, userMapper)
+            fetch("select * from user", User::class)
         }
     }
 
