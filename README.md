@@ -202,6 +202,7 @@ fun persist() {
 * Upsert support
 * Understandable error message
 * Caching LexResult
+* Change odd class names
 * Documentation
 * More tests
 

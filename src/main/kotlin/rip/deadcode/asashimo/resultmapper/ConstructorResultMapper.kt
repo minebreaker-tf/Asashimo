@@ -16,7 +16,7 @@ object ConstructorResultMapper : GeneralResultMapper {
     override fun <T : Any> map(registry: AsashimoRegistry, cls: KClass<T>, resultSet: ResultSet): T {
         return convertToBasicType(cls, resultSet, registry.config)
                 ?: convertWithAllArgsConstructor(cls, resultSet, registry.config)
-                ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
+                ?: throw AsashimoException("Failed to map ResultSet to class '${cls.java.canonicalName}'")
     }
 
     @VisibleForTesting

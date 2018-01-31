@@ -17,7 +17,7 @@ object BeanResultMapper : GeneralResultMapper {
     override fun <T : Any> map(registry: AsashimoRegistry, cls: KClass<T>, resultSet: ResultSet): T {
         return convertToBasicType(cls, resultSet, registry.config)
                 ?: convertAsBean(cls, resultSet)
-                ?: throw AsashimoException("Failed to map ResultSet to class '${cls}'")
+                ?: throw AsashimoException("Failed to map ResultSet to class '${cls.java.canonicalName}'")
     }
 
     @VisibleForTesting
