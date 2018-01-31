@@ -1,5 +1,6 @@
 package rip.deadcode.asashimo
 
+import com.google.common.annotations.Beta
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.errorprone.annotations.CanIgnoreReturnValue
@@ -53,6 +54,11 @@ interface Connector {
     fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T>
     fun <T> transactionalAsync(
             executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
+
+    @Beta
+    fun persist(entity: Any)
+    @Beta
+    fun <T : Any> find(id: Any, cls: KClass<T>): T
 
 }
 

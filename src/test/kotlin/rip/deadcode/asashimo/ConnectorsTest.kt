@@ -9,6 +9,9 @@ import org.junit.Assert.fail
 import org.junit.rules.ExpectedException
 import rip.deadcode.asashimo.resultmapper.MapResultMapper
 import java.sql.ResultSet
+import javax.persistence.Column
+import javax.persistence.Id
+import javax.persistence.Table
 
 class ConnectorsTest {
 
@@ -36,7 +39,7 @@ class ConnectorsTest {
         connector?.exec("shutdown")
     }
 
-    data class User(val id: Int, val name: String)
+    private data class User(val id: Int, val name: String)
 
     private val userMapper = { rs: ResultSet -> User(rs.getInt("id"), rs.getString("name")) }
 
@@ -376,6 +379,42 @@ class ConnectorsTest {
             exec("insert into user values(1, 'John'), (2, 'Jack')")
             fetch("select * from user", User::class, userMapper)
         }
+    }
+
+    @Table(name = "user")
+    data class JpaUser(
+            @Id
+            @Column(name = "user_id")
+            val id: Int = 0,
+            val name: String = ""
+    )
+
+    @Test
+    fun genericTest25() {
+
+        connector!!.exec("create table user(user_id int, name varchar)")
+
+        val user = JpaUser(123, "John")
+        connector!!.persist(user)
+
+        val result = connector!!.fetch("select * from user", JpaUser::class)
+
+        assertThat(result.id).isEqualTo(123)
+        assertThat(result.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest26() {
+
+        connector!!.use {
+            exec("create table user(user_id int, name varchar)")
+            exec("insert into user values(123, 'John')")
+        }
+
+        val result = connector!!.find(123, JpaUser::class)
+
+        assertThat(result.id).isEqualTo(123)
+        assertThat(result.name).isEqualTo("John")
     }
 
 }

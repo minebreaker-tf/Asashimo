@@ -3,13 +3,13 @@ package rip.deadcode.asashimo.jpa
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import javax.persistence.Column
-import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.Table
 
 class JpaIntrospectorTest {
 
     @Suppress("unused")
-    @Entity(name = "user")
+    @Table(name = "user")
     class User(
             @Id
             @Column(name = "user_id")
@@ -22,9 +22,9 @@ class JpaIntrospectorTest {
     fun testAnnotated() {
         val result = JpaIntrospector.introspect(User())
 
-        assertThat(result.table).isEqualTo("user")
-        assertThat(result.id).isEqualTo("user_id")
-        assertThat(result.columns).containsExactly("user_name")
+        assertThat(result.tableName).isEqualTo("user")
+        assertThat(result.idName).isEqualTo("user_id")
+        assertThat(result.columnNames).containsExactly("user_name")
     }
 
     @Suppress("unused")
@@ -38,9 +38,9 @@ class JpaIntrospectorTest {
     fun testNotAnnotated() {
         val result = JpaIntrospector.introspect(UserNoAnnotation())
 
-        assertThat(result.table).isEqualTo("UserNoAnnotation")
-        assertThat(result.id).isEqualTo("id")
-        assertThat(result.columns).containsExactly("name")
+        assertThat(result.tableName).isEqualTo("UserNoAnnotation")
+        assertThat(result.idName).isEqualTo("id")
+        assertThat(result.columnNames).containsExactly("name")
     }
 
 }

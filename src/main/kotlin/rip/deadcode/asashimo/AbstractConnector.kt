@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
+import rip.deadcode.asashimo.jpa.JpaRunner
 import java.sql.Connection
 import java.sql.ResultSet
 import java.util.function.Supplier
@@ -108,6 +109,24 @@ internal abstract class AbstractConnector(
             executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             transactional(block)
+        }
+    }
+
+    override fun persist(entity: Any) {
+        try {
+            return JpaRunner.persist(registry, getConnection(), entity)
+        } catch (e: Exception) {
+            resetDataSourceCallback()
+            throw AsashimoException("persist failed.", e)
+        }
+    }
+
+    override fun <T : Any> find(id: Any, cls: KClass<T>): T {
+        try {
+            return JpaRunner.find(registry, getConnection(), id, cls)
+        } catch (e: Exception) {
+            resetDataSourceCallback()
+            throw AsashimoException("find failed.", e)
         }
     }
 

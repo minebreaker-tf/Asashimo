@@ -64,7 +64,7 @@ internal object StatementGenerator {
         return ConversionResult(sqlToExec, paramsToSet)
     }
 
-    private fun setParams(registry: AsashimoRegistry, stmt: PreparedStatement, paramsToSet: List<Any?>) {
+    internal fun setParams(registry: AsashimoRegistry, stmt: PreparedStatement, paramsToSet: List<Any?>) {
 
         // TODO refactoring for better readability and performance
 

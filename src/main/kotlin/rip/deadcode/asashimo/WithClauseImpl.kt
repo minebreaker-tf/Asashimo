@@ -73,6 +73,7 @@ internal class WithClauseImpl(
             conn.autoCommit = true
             return UseClauseImpl(conn, registry, connectionResetCallback, params).block()
         } catch (e: Exception) {
+            // TODO rethrow AsashimoException
             connectionResetCallback()
             throw AsashimoException("Exception in use method.", e)
         } finally {
