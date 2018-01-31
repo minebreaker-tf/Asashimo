@@ -144,6 +144,7 @@ the default executor pooled by Asashimo is used.
 
 (This will be configurable in the future versions)
 
+
 #### Map API
 
 ```kotlin
@@ -152,6 +153,39 @@ fun mapApi() {
     val result: Map<String, String> = connector.fetch(
             "select 'hello, world' as message from dual", Map::class)
     assertThat(result).containsExactly("message", "hello, world")
+}
+```
+
+
+#### JPA Annotation
+
+Asashimo can use JPA annotations to easily fetch/persist entities.
+
+Note that these APIs are **NOT** intended to be JPA-compatible.
+
+```kotlin
+@Table(name = "user")
+data class User(
+        @Id
+        @Column(name = "user_id")
+        val id: Int = 0,
+        val name: String = ""
+)
+
+fun find() {
+    val user = JpaUser(123, "John")
+    connector.persist(user)
+    val result = connector.fetch("select * from user", User::class)
+
+    assertThat(result.id).isEqualTo(123)
+    assertThat(result.name).isEqualTo("John")
+}
+
+fun persist() {
+    val key = 123
+    val result = connector.find(key, User::class)
+
+    assertThat(result).isInstanceOf(User::class.java)
 }
 ```
 
@@ -170,22 +204,6 @@ fun mapApi() {
 * Caching LexResult
 * Documentation
 * More tests
-
-```kotlin
-fun jpaAnnotationApi() {
-    @Entity
-    data class User(
-        @Id
-        @Column(name="user_id")
-        val id: Int,
-        @Column(name="user_name")
-        val name: String
-    )
-    var user = connector.find(123, User::class)
-    user = User(456, "John")
-    connector.persist(user)
-}
-```
 
 
 ## License

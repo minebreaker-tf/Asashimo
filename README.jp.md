@@ -145,6 +145,51 @@ val userFuture: ListenableFuture<User> = connector
 (このあたりの動作は将来のバージョンで改善予定です)
 
 
+#### マップAPI
+
+```kotlin
+fun mapApi() {
+    connector = Connectors.newInstance(dataSource = dataSource, defaultResultMapper = MapResultMapper)
+    val result: Map<String, String> = connector.fetch(
+            "select 'hello, world' as message from dual", Map::class)
+    assertThat(result).containsExactly("message", "hello, world")
+}
+```
+
+
+#### JPAアノテーション
+
+アサシモはエンティティー簡単にフェッチ/永続化するため、JPAのアノテーションを利用することができます。
+
+これらのAPIはJPAとの互換性を持たせることを意図しているものではないことに注意してください。
+
+```kotlin
+@Table(name = "user")
+data class User(
+        @Id
+        @Column(name = "user_id")
+        val id: Int = 0,
+        val name: String = ""
+)
+
+fun find() {
+    val user = JpaUser(123, "John")
+    connector.persist(user)
+    val result = connector.fetch("select * from user", User::class)
+
+    assertThat(result.id).isEqualTo(123)
+    assertThat(result.name).isEqualTo("John")
+}
+
+fun persist() {
+    val key = 123
+    val result = connector.find(key, User::class)
+
+    assertThat(result).isInstanceOf(User::class.java)
+}
+```
+
+
 ## ライセンス
 
 MIT
