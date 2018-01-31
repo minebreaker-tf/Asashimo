@@ -52,6 +52,11 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+// CircleCI somehow fails to execute dokka task, requiring reflection jars. Seems to be the bug of dokka.
+if (System.getenv()["CIRCLECI"]) {
+    dokka.enabled = false
+}
+
 dokka {
     outputFormat = 'javadoc'
     outputDirectory = javadoc.destinationDir
