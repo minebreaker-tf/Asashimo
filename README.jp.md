@@ -182,8 +182,8 @@ fun find() {
 }
 
 fun persist() {
-    val key = 123
-    val result = connector.find(key, User::class)
+    val id = 123
+    val result = connector.find(id, User::class)
 
     assertThat(result).isInstanceOf(User::class.java)
 }
