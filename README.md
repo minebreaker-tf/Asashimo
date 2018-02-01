@@ -197,7 +197,6 @@ fun persist() {
 * Savepoint
 * Batch
 * Fetch interface API
-* class to parameter binding, based on JPA annotations / field names
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * Upsert support
 * Understandable error message

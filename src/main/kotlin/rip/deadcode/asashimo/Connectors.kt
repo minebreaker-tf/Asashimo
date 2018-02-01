@@ -7,6 +7,9 @@ import rip.deadcode.asashimo.resultmapper.GeneralResultMapper
 import java.util.concurrent.Executors
 import javax.sql.DataSource
 
+/**
+ * Factory class to generate [Connector] instance.
+ */
 object Connectors {
 
     private val jvmUniqueExecutor: ListeningExecutorService by lazy {
@@ -22,6 +25,13 @@ object Connectors {
         return newInstance({ dataSource }, config, defaultResultMapper)
     }
 
+    /**
+     * Creates [Connector].
+     *
+     * @param dataSourceFactory Factory to generate [DataSource]
+     * @param config Configuration object
+     * @param defaultResultMapper Default result mapper, used when result set is not specified in each method
+     */
     @JvmOverloads
     fun newInstance(
             dataSourceFactory: () -> DataSource,
@@ -36,6 +46,11 @@ object Connectors {
         ))
     }
 
+    /**
+     * Creates [Connector] using given registry.
+     *
+     * @param registry [AsashimoRegistry] used to create [Connector]
+     */
     fun newInstance(registry: AsashimoRegistry): Connector {
         return if (registry.config.resetDataSourceWhenExceptionOccurred) {
             ResettingConnector(registry)
