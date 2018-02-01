@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
+import rip.deadcode.asashimo.jpa.JpaIntrospector
 import rip.deadcode.asashimo.jpa.JpaRunner
 import java.sql.Connection
 import java.sql.ResultSet
@@ -10,6 +11,21 @@ import kotlin.reflect.KClass
 
 internal abstract class AbstractConnector(
         private val registry: AsashimoRegistry) : Connector {
+
+    override fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause {
+        val params = mutableMapOf<String, Any?>()
+        block(params)
+        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
+    }
+
+    override fun with(params: Map<String, Any>): WithClause {
+        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
+    }
+
+    override fun with(entity: Any): WithClause {
+        return WithClauseImpl(
+                getConnection(), registry, ::resetDataSourceCallback, JpaIntrospector.getBindings(entity))
+    }
 
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         return use { fetch(sql, cls, resultMapper) }
@@ -70,16 +86,6 @@ internal abstract class AbstractConnector(
         return (executorService ?: registry.executor).submit<Long> {
             use { execLarge(sql) }
         }
-    }
-
-    override fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause {
-        val params = mutableMapOf<String, Any?>()
-        block(params)
-        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
-    }
-
-    override fun with(params: Map<String, Any>): WithClause {
-        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
     }
 
     override fun <T> use(block: UseClause.() -> T): T {

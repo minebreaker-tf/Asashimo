@@ -17,11 +17,11 @@ internal class WithClauseImpl(
 
     private val internalParams: MutableMap<String, Any?> = mutableMapOf()
 
-    override fun with(binding: Pair<String, Any?>) {
+    override fun bind(binding: Pair<String, Any?>) {
         internalParams += binding
     }
 
-    override fun with(block: (MutableMap<String, Any?>) -> Unit) {
+    override fun bind(block: (MutableMap<String, Any?>) -> Unit) {
         block(internalParams)
     }
 

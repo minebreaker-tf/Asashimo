@@ -13,6 +13,8 @@ interface Connector {
     fun with(params: Map<String, Any>): WithClause
     fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause
 
+    fun with(entity: Any): WithClause
+
     fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): T
     fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): T?
     fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): List<T>
@@ -57,6 +59,7 @@ interface Connector {
 
     @Beta
     fun persist(entity: Any)
+
     @Beta
     fun <T : Any> find(id: Any, cls: KClass<T>): T
 

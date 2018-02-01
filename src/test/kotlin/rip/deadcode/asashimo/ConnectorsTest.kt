@@ -338,8 +338,8 @@ class ConnectorsTest {
             it["name"] = "XXX"
         }.use {
                     exec("create table user(id int, name varchar)")
-                    with("id" to 1)
-                    with("name" to "John")
+                    bind("id" to 1)
+                    bind("name" to "John")
                     exec("insert into user values(:id, :name)")
                     fetch("select * from user", User::class, userMapper)
                 }
@@ -355,7 +355,7 @@ class ConnectorsTest {
             it["name"] = "XXX"
         }.use {
                     exec("create table user(id int, name varchar)")
-                    with {
+                    bind {
                         it["id"] = 1
                         it["name"] = "John"
                     }
@@ -410,6 +410,34 @@ class ConnectorsTest {
         }
 
         val result = connector!!.find(123, JpaUser::class)
+
+        assertThat(result.id).isEqualTo(123)
+        assertThat(result.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest27() {
+
+        val entity = User(123, "John")
+        val result = connector!!.with(entity).use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(123, 'John')")
+            fetch("select id, name from user where id = :id and name = :name", User::class)
+        }
+
+        assertThat(result.id).isEqualTo(123)
+        assertThat(result.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest28() {
+
+        val entity = JpaUser(123, "John")
+        val result = connector!!.with(entity).use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(123, 'John')")
+            fetch("select id, name from user where id = :user_id and name = :name", User::class)
+        }
 
         assertThat(result.id).isEqualTo(123)
         assertThat(result.name).isEqualTo("John")

@@ -7,12 +7,12 @@ import kotlin.reflect.KClass
 @FunctionalInterface
 interface UseClause {
 
-    fun with(name: String, value: Any?) {
-        with(name to value)
+    fun bind(name: String, value: Any?) {
+        bind(name to value)
     }
 
-    fun with(binding: Pair<String, Any?>)
-    fun with(block: (MutableMap<String, Any?>) -> Unit)
+    fun bind(binding: Pair<String, Any?>)
+    fun bind(block: (MutableMap<String, Any?>) -> Unit)
 
     fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): T
     fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): T?

@@ -25,6 +25,25 @@ object JpaIntrospector {
         return JpaIntrospectionTypeResult(table, columns.idName, columns.columnsName)
     }
 
+    fun getBindings(entity: Any): Map<String, Any?> {
+
+        val fields = entity::class.java.declaredFields
+        val columnNames = mutableListOf<String>()
+        val columns = mutableListOf<Any>()
+
+        for (f in fields) {
+            f.isAccessible = true
+
+            val columnMark = f.getAnnotation(Column::class.java)
+            val name = columnMark?.name ?: f.name
+
+            columnNames += name
+            columns += f.get(entity)
+        }
+
+        return (columnNames zip columns).associate { it }
+    }
+
     private fun getTable(cls: KClass<*>): String {
         val mark = cls.java.getDeclaredAnnotation(Table::class.java)
         return mark?.name ?: cls.java.simpleName
