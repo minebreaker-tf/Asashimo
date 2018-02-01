@@ -18,7 +18,7 @@ apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
 group 'rip.deadcode'
-version '0.2.4-SNAPSHOT'
+version '0.2.4'
 
 repositories {
     mavenCentral()
