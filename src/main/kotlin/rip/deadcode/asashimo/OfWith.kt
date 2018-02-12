@@ -8,7 +8,7 @@ import java.util.function.Supplier
 import kotlin.reflect.KClass
 
 @FunctionalInterface
-interface WithClause {
+interface OfWith {
 
     fun bind(name: String, value: Any?) {
         bind(name to value)
@@ -86,32 +86,32 @@ interface WithClause {
      * @see Connector.use
      */
     @CanIgnoreReturnValue
-    fun <T> use(block: UseClause.() -> T): T
+    fun <T> use(block: OfUse.() -> T): T
 
     /**
      * @see Connector.useLazy
      */
-    fun <T> useLazy(block: UseClause.() -> T): Supplier<T>
+    fun <T> useLazy(block: OfUse.() -> T): Supplier<T>
 
     /**
      * @see Connector.useAsync
      */
-    fun <T> useAsync(executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
+    fun <T> useAsync(executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
 
     /**
      * @see Connector.transactional
      */
     @CanIgnoreReturnValue
-    fun <T> transactional(block: UseClause.() -> T): T
+    fun <T> transactional(block: OfUse.() -> T): T
 
     /**
      * @see Connector.transactionalLazy
      */
-    fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T>
+    fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T>
 
     /**
      * @see Connector.transactionalAsync
      */
     fun <T> transactionalAsync(
-            executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
+            executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
 }

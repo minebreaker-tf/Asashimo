@@ -200,8 +200,8 @@ ID: SQL
 
 ```
 + kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.Connector"))
-+ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.UseClause"))
-+ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.WithClause"))
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.OfUse"))
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.OfWith"))
 ```
 
 TODO: Find better pattern

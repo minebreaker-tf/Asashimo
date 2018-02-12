@@ -9,11 +9,11 @@ import java.sql.ResultSet
 import java.util.function.Supplier
 import kotlin.reflect.KClass
 
-internal class WithClauseImpl(
+internal class OfWithImpl(
         private val conn: Connection,
         private val registry: AsashimoRegistry,
         private val connectionResetCallback: () -> Unit,
-        private val params: Map<String, Any?>) : WithClause {
+        private val params: Map<String, Any?>) : OfWith {
 
     private val internalParams: MutableMap<String, Any?> = mutableMapOf()
 
@@ -87,10 +87,10 @@ internal class WithClauseImpl(
         return (executorService ?: registry.executor).submit<Long> { execLarge(sql) }
     }
 
-    override fun <T> use(block: UseClause.() -> T): T {
+    override fun <T> use(block: OfUse.() -> T): T {
         try {
             conn.autoCommit = true
-            return UseClauseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
+            return OfUseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
         } catch (e: Exception) {
             connectionResetCallback()
             if (e is AsashimoException) {
@@ -109,24 +109,24 @@ internal class WithClauseImpl(
         }
     }
 
-    override fun <T> useLazy(block: UseClause.() -> T): Supplier<T> {
+    override fun <T> useLazy(block: OfUse.() -> T): Supplier<T> {
         return Supplier { use(block) }
     }
 
     override fun <T> useAsync(
-            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+            executorService: ListeningExecutorService?, block: OfUse.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             use(block)
         }
     }
 
-    override fun <T> transactional(block: UseClause.() -> T): T {
+    override fun <T> transactional(block: OfUse.() -> T): T {
         try {
             if (conn.transactionIsolation == Connection.TRANSACTION_NONE) {
                 throw AsashimoException("Transaction is not available.")
             }
             conn.autoCommit = false
-            val result = UseClauseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
+            val result = OfUseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
             conn.commit()
             return result
         } catch (e: Exception) {
@@ -154,19 +154,19 @@ internal class WithClauseImpl(
         }
     }
 
-    override fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T> {
+    override fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T> {
         return Supplier { transactional(block) }
     }
 
     override fun <T> transactionalAsync(
-            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+            executorService: ListeningExecutorService?, block: OfUse.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             transactional(block)
         }
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(WithClauseImpl::class.java)
+        private val logger = LoggerFactory.getLogger(OfWithImpl::class.java)
     }
 
 }

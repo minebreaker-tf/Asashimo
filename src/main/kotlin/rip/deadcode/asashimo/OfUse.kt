@@ -5,7 +5,7 @@ import java.sql.ResultSet
 import kotlin.reflect.KClass
 
 @FunctionalInterface
-interface UseClause {
+interface OfUse {
 
     fun bind(name: String, value: Any?) {
         bind(name to value)

@@ -17,7 +17,7 @@ interface Connector {
      * connector.with(mapOf("id" to 1)).fetch("select * from user where id = :id", User::class)
      * ```
      */
-    fun with(params: Map<String, Any>): WithClause
+    fun with(params: Map<String, Any>): OfWith
 
     /**
      * Binds given parameters as named parameters of the SQL.
@@ -26,13 +26,13 @@ interface Connector {
      * connector.with { it["id"] = 1 }.fetch("select * from user where id = :id", User::class)
      * ```
      */
-    fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause
+    fun with(block: (MutableMap<String, Any?>) -> Unit): OfWith
 
     /**
      * Binds fields of the given entity as named parameters of the SQL.
      * If JPA annotations ([javax.persistence.Column]) is used, the name is recognized as a parameter name.
      */
-    fun with(entity: Any): WithClause
+    fun with(entity: Any): OfWith
 
     /**
      * Fetches the database using the given SQL. The result must have an exactly one row.
@@ -117,17 +117,17 @@ interface Connector {
     fun execLargeAsync(sql: String, executorService: ListeningExecutorService? = null): ListenableFuture<Long>
 
     @CanIgnoreReturnValue
-    fun <T> use(block: UseClause.() -> T): T
+    fun <T> use(block: OfUse.() -> T): T
 
-    fun <T> useLazy(block: UseClause.() -> T): Supplier<T>
-    fun <T> useAsync(executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
+    fun <T> useLazy(block: OfUse.() -> T): Supplier<T>
+    fun <T> useAsync(executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
 
     @CanIgnoreReturnValue
-    fun <T> transactional(block: UseClause.() -> T): T
+    fun <T> transactional(block: OfUse.() -> T): T
 
-    fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T>
+    fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T>
     fun <T> transactionalAsync(
-            executorService: ListeningExecutorService? = null, block: UseClause.() -> T): ListenableFuture<T>
+            executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
 
     @Beta
     fun persist(entity: Any)

@@ -4,11 +4,11 @@ import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
-internal class UseClauseImpl(
+internal class OfUseImpl(
         private val connection: Connection,
         private val registry: AsashimoRegistry,
         private val connectionResetCallback: () -> Unit,
-        private val params: Map<String, Any?> = mapOf()) : UseClause {
+        private val params: Map<String, Any?> = mapOf()) : OfUse {
 
     private val internalParams: MutableMap<String, Any?> = mutableMapOf()
 

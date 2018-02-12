@@ -12,18 +12,18 @@ import kotlin.reflect.KClass
 internal abstract class AbstractConnector(
         private val registry: AsashimoRegistry) : Connector {
 
-    override fun with(block: (MutableMap<String, Any?>) -> Unit): WithClause {
+    override fun with(block: (MutableMap<String, Any?>) -> Unit): OfWith {
         val params = mutableMapOf<String, Any?>()
         block(params)
-        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
+        return OfWithImpl(getConnection(), registry, ::resetDataSourceCallback, params)
     }
 
-    override fun with(params: Map<String, Any>): WithClause {
-        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, params)
+    override fun with(params: Map<String, Any>): OfWith {
+        return OfWithImpl(getConnection(), registry, ::resetDataSourceCallback, params)
     }
 
-    override fun with(entity: Any): WithClause {
-        return WithClauseImpl(
+    override fun with(entity: Any): OfWith {
+        return OfWithImpl(
                 getConnection(), registry, ::resetDataSourceCallback, JpaIntrospector.getBindings(entity))
     }
 
@@ -88,31 +88,31 @@ internal abstract class AbstractConnector(
         }
     }
 
-    override fun <T> use(block: UseClause.() -> T): T {
-        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).use(block)
+    override fun <T> use(block: OfUse.() -> T): T {
+        return OfWithImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).use(block)
     }
 
-    override fun <T> useLazy(block: UseClause.() -> T): Supplier<T> {
+    override fun <T> useLazy(block: OfUse.() -> T): Supplier<T> {
         return Supplier { use(block) }
     }
 
     override fun <T> useAsync(
-            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+            executorService: ListeningExecutorService?, block: OfUse.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             use(block)
         }
     }
 
-    override fun <T> transactional(block: UseClause.() -> T): T {
-        return WithClauseImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).transactional(block)
+    override fun <T> transactional(block: OfUse.() -> T): T {
+        return OfWithImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).transactional(block)
     }
 
-    override fun <T> transactionalLazy(block: UseClause.() -> T): Supplier<T> {
+    override fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T> {
         return Supplier { transactional(block) }
     }
 
     override fun <T> transactionalAsync(
-            executorService: ListeningExecutorService?, block: UseClause.() -> T): ListenableFuture<T> {
+            executorService: ListeningExecutorService?, block: OfUse.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             transactional(block)
         }
