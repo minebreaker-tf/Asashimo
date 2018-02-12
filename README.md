@@ -190,6 +190,23 @@ fun persist() {
 ```
 
 
+## IntelliJ Language Injection
+
+File -> Settings -> Editor -> Lnaguage Injections
+
+Add ("+" icon) -> Generic Kotlin
+
+ID: SQL
+
+```
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.Connector"))
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.UseClause"))
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.WithClause"))
+```
+
+TODO: Find better pattern
+
+
 ## TODOs
 
 * Java 8 Date and Time API

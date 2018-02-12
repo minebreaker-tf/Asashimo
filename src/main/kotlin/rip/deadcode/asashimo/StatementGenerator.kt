@@ -25,6 +25,7 @@ internal object StatementGenerator {
 
         val (sqlToExec, paramsToSet) = convertTokensToParamSet(tokens, params)
         logger.debug("SQL: {}", sqlToExec)
+        logger.trace("Params: {}", paramsToSet)
 
         val stmt = conn.prepareStatement(sqlToExec)
         setParams(registry, stmt, paramsToSet)
