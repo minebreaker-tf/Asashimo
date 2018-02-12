@@ -1,9 +1,9 @@
 package rip.deadcode.asashimo
 
-import com.google.common.annotations.Beta
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.errorprone.annotations.CanIgnoreReturnValue
+import rip.deadcode.asashimo.utils.Experimental
 import java.sql.ResultSet
 import java.util.function.Supplier
 import kotlin.reflect.KClass
@@ -81,6 +81,7 @@ interface Connector {
      * @return A list of the result rows of the executed SQL
      */
     fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): List<T>
+
     fun <T : Any> fetchLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): Supplier<T>
     fun <T : Any> fetchAllLazy(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)? = null): Supplier<List<T>>
 
@@ -129,10 +130,10 @@ interface Connector {
     fun <T> transactionalAsync(
             executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
 
-    @Beta
+    @Experimental
     fun persist(entity: Any)
 
-    @Beta
+    @Experimental
     fun <T : Any> find(id: Any, cls: KClass<T>): T
 
 }

@@ -1,11 +1,11 @@
 package rip.deadcode.asashimo
 
-import com.google.common.annotations.Beta
+import rip.deadcode.asashimo.utils.Experimental
 
 enum class Java8DateConversionStrategy {
     RAW,
-    @Beta
+    @Experimental
     CONVERT,
-    @Beta
+    @Experimental
     CONVERT_NONLOCAL,
 }

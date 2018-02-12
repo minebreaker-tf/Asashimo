@@ -1,12 +1,12 @@
 package rip.deadcode.asashimo
 
-import com.google.common.annotations.Beta
+import rip.deadcode.asashimo.utils.Experimental
 import java.time.ZoneOffset
 
 data class AsashimoConfig(
         val resetDataSourceWhenExceptionOccurred: Boolean = true,
-        @Beta
+        @Experimental
         val java8dateConversionStrategy: Java8DateConversionStrategy = Java8DateConversionStrategy.RAW,
-        @Beta
+        @Experimental
         val databaseZoneOffset: ZoneOffset = ZoneOffset.UTC
 )

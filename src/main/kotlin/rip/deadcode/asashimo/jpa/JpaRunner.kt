@@ -1,9 +1,9 @@
 package rip.deadcode.asashimo.jpa
 
-import com.google.common.annotations.Beta
 import rip.deadcode.asashimo.AsashimoRegistry
 import rip.deadcode.asashimo.StatementGenerator
 import rip.deadcode.asashimo.resultmapper.JpaResultMapper
+import rip.deadcode.asashimo.utils.Experimental
 import rip.deadcode.asashimo.utils.escape
 import java.sql.Connection
 import javax.persistence.NoResultException
@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
 
 object JpaRunner {
 
-    @Beta
+    @Experimental
     fun persist(registry: AsashimoRegistry, conn: Connection, entity: Any) {
 
         val info = JpaIntrospector.introspect(entity)
@@ -28,7 +28,7 @@ object JpaRunner {
         stmt.execute()
     }
 
-    @Beta
+    @Experimental
     fun <T : Any> find(registry: AsashimoRegistry, conn: Connection, id: Any, cls: KClass<T>): T {
 
         val clsInfo = JpaIntrospector.introspect(cls)

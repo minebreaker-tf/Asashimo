@@ -218,7 +218,6 @@ TODO: Find better pattern
 * Upsert support
 * Understandable error message
 * Performance tests and cache things if necessary
-* Change odd class names
 * Documentation
 * More tests
 
