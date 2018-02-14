@@ -38,7 +38,7 @@ object ConstructorResultMapper : GeneralResultMapper {
                         args[i] = registry.retriever.retrieveByClass(resultSet, type.kotlin, i + 1)
                                 ?: resultSet.getObject(i + 1, type)
                     }
-                    if (!constructor.isAccessible) constructor.isAccessible = true
+                    constructor.isAccessible = true
                     @Suppress("UNCHECKED_CAST")
                     return constructor.newInstance(*args) as T
                 } catch (e: Exception) {

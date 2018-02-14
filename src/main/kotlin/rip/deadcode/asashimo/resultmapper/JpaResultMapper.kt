@@ -22,7 +22,9 @@ object JpaResultMapper : GeneralResultMapper {
         }
 
         val instance = try {
-            cls.java.newInstance()
+            val constructor = cls.java.getDeclaredConstructor()
+            constructor.isAccessible = true
+            constructor.newInstance()
         } catch (e: InstantiationException) {
             throw AsashimoException("JpaResultMapper requires default noargs constructor.", e)
         }

@@ -24,7 +24,9 @@ object BeanResultMapper : GeneralResultMapper {
     internal fun <T : Any> convertAsBean(cls: KClass<T>, resultSet: ResultSet): T? {
 
         return try {
-            val targetInstance = cls.java.newInstance()
+            val constructor = cls.java.getDeclaredConstructor()
+            constructor.isAccessible = true
+            val targetInstance = constructor.newInstance()
             val meta = resultSet.metaData
             val columnNames = (1..meta.columnCount).map { meta.getColumnName(it) }
 
@@ -34,7 +36,7 @@ object BeanResultMapper : GeneralResultMapper {
                 val property = properties.first { it.name == toLowerCamel(columnName) }
                 // TODO respect transient
                 val writer = property.writeMethod
-                if (!writer.isAccessible) writer.isAccessible = true
+                writer.isAccessible = true
                 writer.invoke(targetInstance, resultSet.getObject(columnName, property.propertyType))
                 // TODO 全てのフィールドが適切に設定されたかチェック
             }
