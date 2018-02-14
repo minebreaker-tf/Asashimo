@@ -140,9 +140,11 @@ val userFuture: ListenableFuture<User> = connector
 ```
 
 引数の`ListeningExecutorService`が省略された場合、
-アサシモがプールするデフォルトの`Executor`が使用されます。
-
-(このあたりの動作は将来のバージョンで改善予定です)
+[DirectExecutorService](http://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/util/concurrent/MoreExecutors.html#newDirectExecutorService--)
+が使用されます。すなわち、`async...`呼び出しは、デフォルトでは非同期に行われません。
+`Connectors`に、アプリケーション固有の
+[ExecutorService](https://docs.oracle.com/javase/jp/8/docs/api/java/util/concurrent/ExecutorService.html)
+を設定する必要があります。
 
 
 #### マップAPI
@@ -173,6 +175,13 @@ data class User(
 )
 
 fun find() {
+    val id = 123
+    val result = connector.find(id, User::class)
+
+    assertThat(result).isInstanceOf(User::class.java)
+}
+
+fun persist() {
     val user = JpaUser(123, "John")
     connector.persist(user)
     val result = connector.fetch("select * from user", User::class)
@@ -180,13 +189,21 @@ fun find() {
     assertThat(result.id).isEqualTo(123)
     assertThat(result.name).isEqualTo("John")
 }
+```
 
-fun persist() {
-    val id = 123
-    val result = connector.find(id, User::class)
 
-    assertThat(result).isInstanceOf(User::class.java)
-}
+## IntelliJ Language Injection
+
+File -> Settings -> Editor -> Language Injections
+
+Add ("+" icon) -> Generic Kotlin
+
+ID: SQL
+
+```
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.Connector"))
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.OfUse"))
++ kotlinParameter().ofFunction(0, kotlinFunction().withName("fetch", "fetchAll", "exec").definedInClass("rip.deadcode.asashimo.OfWith"))
 ```
 
 

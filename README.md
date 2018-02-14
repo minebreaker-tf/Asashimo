@@ -139,10 +139,12 @@ val userFuture: ListenableFuture<User> = connector
         }
 ```
 
-If `ListeningExecutorService` in arguments is omitted,
-the default executor pooled by Asashimo is used.
-
-(This will be configurable in the future versions)
+If `ListeningExecutorService` in the arguments is omitted,
+[DirectExecutorService](http://google.github.io/guava/releases/snapshot-jre/api/docs/com/google/common/util/concurrent/MoreExecutors.html#newDirectExecutorService--)
+is used. This means `async...` calls are not actually async by default.
+You must configure your own
+[ExecutorService](https://docs.oracle.com/javase/jp/8/docs/api/java/util/concurrent/ExecutorService.html)
+pool via `Connectors`.
 
 
 #### Map API
@@ -173,6 +175,13 @@ data class User(
 )
 
 fun find() {
+    val id = 123
+    val result = connector.find(id, User::class)
+
+    assertThat(result).isInstanceOf(User::class.java)
+}
+
+fun persist() {
     val user = JpaUser(123, "John")
     connector.persist(user)
     val result = connector.fetch("select * from user", User::class)
@@ -180,19 +189,12 @@ fun find() {
     assertThat(result.id).isEqualTo(123)
     assertThat(result.name).isEqualTo("John")
 }
-
-fun persist() {
-    val id = 123
-    val result = connector.find(id, User::class)
-
-    assertThat(result).isInstanceOf(User::class.java)
-}
 ```
 
 
 ## IntelliJ Language Injection
 
-File -> Settings -> Editor -> Lnaguage Injections
+File -> Settings -> Editor -> Language Injections
 
 Add ("+" icon) -> Generic Kotlin
 
@@ -216,7 +218,6 @@ TODO: Find better pattern
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * Upsert support
 * Registry builder
-* Disable Async API by default, to prevent instantiating unnecessary threads
 * Understandable error message
 * Performance tests and cache things if necessary
 * Documentation

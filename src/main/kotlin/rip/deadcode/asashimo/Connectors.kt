@@ -1,10 +1,10 @@
 package rip.deadcode.asashimo
 
-import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
 import rip.deadcode.asashimo.manipulation.*
 import rip.deadcode.asashimo.resultmapper.ConstructorResultMapper
 import rip.deadcode.asashimo.resultmapper.GeneralResultMapper
+import java.util.concurrent.ExecutorService
 import javax.sql.DataSource
 
 /**
@@ -12,17 +12,18 @@ import javax.sql.DataSource
  */
 object Connectors {
 
-    private val defaultExecutor: ListeningExecutorService by lazy {
-        MoreExecutors.listeningDecorator(MoreExecutors.newDirectExecutorService())
+    private val defaultExecutor: ExecutorService by lazy {
+        MoreExecutors.newDirectExecutorService()
     }
 
     @JvmOverloads
     fun newInstance(
             dataSource: DataSource,
             config: AsashimoConfig = AsashimoConfig(),
-            defaultResultMapper: GeneralResultMapper = ConstructorResultMapper
+            defaultResultMapper: GeneralResultMapper = ConstructorResultMapper,
+            executor: ExecutorService = defaultExecutor
     ): Connector {
-        return newInstance({ dataSource }, config, defaultResultMapper)
+        return newInstance({ dataSource }, config, defaultResultMapper, executor)
     }
 
     /**
@@ -36,13 +37,14 @@ object Connectors {
     fun newInstance(
             dataSourceFactory: () -> DataSource,
             config: AsashimoConfig = AsashimoConfig(),
-            defaultResultMapper: GeneralResultMapper = ConstructorResultMapper
+            defaultResultMapper: GeneralResultMapper = ConstructorResultMapper,
+            executor: ExecutorService = defaultExecutor
     ): Connector {
         return newInstance(AsashimoRegistry(
                 dataSourceFactory,
                 config,
                 defaultResultMapper,
-                defaultExecutor,
+                MoreExecutors.listeningDecorator(executor),
                 resolveRetrievers(config),
                 resolveSetters(config)
         ))
