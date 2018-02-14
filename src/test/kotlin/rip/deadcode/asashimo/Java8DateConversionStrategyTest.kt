@@ -5,7 +5,7 @@ import org.h2.jdbcx.JdbcDataSource
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import rip.deadcode.asashimo.Java8DateConversionStrategy.CONVERT
+import rip.deadcode.asashimo.DateConversionStrategy.CONVERT_TO_CLASSIC
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -23,7 +23,7 @@ class Java8DateConversionStrategyTest {
             user = "sa"
             password = ""
         }
-        connector = Connectors.newInstance(dataSource, AsashimoConfig(java8dateConversionStrategy = CONVERT))
+        connector = Connectors.newInstance(dataSource, AsashimoConfig(dateConversionStrategy = CONVERT_TO_CLASSIC))
     }
 
     @After
@@ -71,7 +71,7 @@ class Java8DateConversionStrategyTest {
             password = ""
         }
         connector = Connectors.newInstance(dataSource, AsashimoConfig(
-                java8dateConversionStrategy = CONVERT,
+                dateConversionStrategy = CONVERT_TO_CLASSIC,
                 databaseZoneOffset = ZoneOffset.of("+9")
         ))
 

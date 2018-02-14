@@ -209,7 +209,6 @@ TODO: Find better pattern
 
 ## TODOs
 
-* Java 8 Date and Time API
 * API for Java
 * Savepoint
 * Batch
@@ -217,10 +216,12 @@ TODO: Find better pattern
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * Upsert support
 * Registry builder
+* Disable Async API by default, to prevent instantiating unnecessary threads
 * Understandable error message
 * Performance tests and cache things if necessary
 * Documentation
 * More tests
+* Java 9 Module
 
 
 ## License

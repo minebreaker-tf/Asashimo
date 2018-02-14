@@ -33,7 +33,7 @@ class DefaultResultMapperTest {
     fun testBasicType1() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getInt(1)).thenReturn(123)
-        val res = convertToBasicType(Int::class, rs, registry!!)
+        val res = convertToBasicType(Int::class, rs)
 
         assertThat(res).isEqualTo(123)
     }
@@ -42,7 +42,7 @@ class DefaultResultMapperTest {
     fun testBasicType2() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getBytes(1)).thenReturn(byteArrayOf(62, 63, 64))
-        val res = convertToBasicType(ByteArray::class, rs, registry!!)
+        val res = convertToBasicType(ByteArray::class, rs)
 
         assertThat(res).isEqualTo(byteArrayOf(62, 63, 64))
     }

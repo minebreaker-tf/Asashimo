@@ -20,7 +20,7 @@ internal fun <T : Any> ResultSet.getUnknown(i: Int, type: KClass<out T>, registr
 /**
  * JDBC型が要求されていた場合、対応するメソッドを使用して値を取得する.
  */
-internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet, registry: AsashimoRegistry): T? {
+internal fun <T : Any> convertToBasicType(cls: KClass<T>, resultSet: ResultSet): T? {
     return try {
         val result = if (BasicRetriever.retrievable(cls)) {
             BasicRetriever.retrieveByClass(resultSet, cls, 1)

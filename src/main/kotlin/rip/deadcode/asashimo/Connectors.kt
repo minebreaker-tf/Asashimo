@@ -65,7 +65,7 @@ object Connectors {
     private fun resolveRetrievers(config: AsashimoConfig): Retriever {
 
         val base = BasicRetriever
-        val java8dateTime = config.java8dateConversionStrategy.getRetriever(config)
+        val java8dateTime = config.dateConversionStrategy.getRetriever(config)
 
         val resolved = if (java8dateTime != null) {
             base.withFallback(java8dateTime)
@@ -78,7 +78,7 @@ object Connectors {
     private fun resolveSetters(config: AsashimoConfig): Setter {
 
         val base = BasicSetter
-        val java8dateTime = config.java8dateConversionStrategy.getSetter(config)
+        val java8dateTime = config.dateConversionStrategy.getSetter(config)
 
         val resolved = if (java8dateTime != null) {
             base.withFallback(java8dateTime)

@@ -7,7 +7,7 @@ data class AsashimoConfig(
         val resetDataSourceWhenExceptionOccurred: Boolean = true,
 
         @Experimental
-        val java8dateConversionStrategy: Java8DateConversionStrategy = Java8DateConversionStrategy.RAW,
+        val dateConversionStrategy: DateConversionStrategy = DateConversionStrategy.RAW,
         @Experimental
         val serverZoneOffset: ZoneOffset = ZoneOffset.UTC,
         @Experimental

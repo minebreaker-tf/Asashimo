@@ -7,7 +7,7 @@ import java.sql.Timestamp
 import java.time.*
 import kotlin.reflect.KClass
 
-class Java8ConvertingRetriever(
+class ConvertToClassicRetriever(
         val databaseOffset: ZoneOffset
 ) : Retriever {
 
@@ -46,7 +46,7 @@ class Java8ConvertingRetriever(
 
 }
 
-class Java8ConvertingSetter(val databaseOffset: ZoneOffset) : Setter {
+class ConvertToClassicSetter(val databaseOffset: ZoneOffset) : Setter {
 
     override fun setValue(stmt: PreparedStatement, param: Any?, index: Int): Boolean {
         val value: Any = when (param) {
@@ -65,6 +65,59 @@ class Java8ConvertingSetter(val databaseOffset: ZoneOffset) : Setter {
             is LocalDate -> java.sql.Date.valueOf(param)
             is LocalTime -> Time.valueOf(param)
             is Instant -> Timestamp.from(param)
+            else -> return false
+        }
+
+        stmt.setObject(index, value)
+        return true
+    }
+}
+
+class ConvertNonLocalToLocalRetriever(
+        val databaseOffset: ZoneOffset
+) : Retriever {
+
+    private val retrievableClass = listOf(
+            ZonedDateTime::class,
+            OffsetDateTime::class,
+            OffsetTime::class
+    )
+
+    override fun <T : Any> retrievable(cls: KClass<T>): Boolean {
+        return retrievableClass.contains(cls)
+    }
+
+    override fun <T : Any> retrieveByClass(rs: ResultSet, cls: KClass<T>, index: Int): T? {
+
+        @Suppress("UNCHECKED_CAST")
+        return when (cls) {
+            ZonedDateTime::class -> {
+                rs.getObject(index, LocalDateTime::class.java).atZone(databaseOffset) as T?
+            }
+            OffsetDateTime::class -> {
+                rs.getObject(index, LocalDateTime::class.java).atOffset(databaseOffset) as T?
+            }
+            OffsetTime::class -> rs.getObject(index, LocalTime::class.java).atOffset(databaseOffset) as T?
+            else -> throw RuntimeException()
+        }
+    }
+}
+
+class ConvertNonLocalToLocalSetter(
+        val databaseOffset: ZoneOffset
+) : Setter {
+
+    override fun setValue(stmt: PreparedStatement, param: Any?, index: Int): Boolean {
+        val value: Any = when (param) {
+            is ZonedDateTime -> {
+                param.withZoneSameInstant(databaseOffset).toLocalDateTime()
+            }
+            is OffsetDateTime -> {
+                param.withOffsetSameInstant(databaseOffset).toLocalDateTime()
+            }
+            is OffsetTime -> {
+                param.withOffsetSameInstant(databaseOffset).toLocalTime()
+            }
             else -> return false
         }
 
