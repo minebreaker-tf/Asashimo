@@ -29,7 +29,7 @@ object JpaResultMapper : GeneralResultMapper {
 
         for ((i, column) in columnNamesWithIndex) {
             val field = correspondingColumnNames[column.toLowerCase()] ?: continue
-            field.set(instance, resultSet.getUnknown(i, field.type.kotlin, registry))
+            field.set(instance, registry.retriever.retrieveByClass(resultSet, cls, i))
         }
 
         return instance
