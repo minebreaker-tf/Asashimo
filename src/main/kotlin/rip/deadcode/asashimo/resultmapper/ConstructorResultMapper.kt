@@ -35,7 +35,7 @@ object ConstructorResultMapper : GeneralResultMapper {
                     val types = constructor.parameterTypes
                     val args = arrayOfNulls<Any>(types.size)
                     for ((i, type) in types.withIndex()) {
-                        args[i] = registry.retriever.retrieveByClass(resultSet, type.kotlin, i)
+                        args[i] = registry.retriever.retrieveByClass(resultSet, type.kotlin, i + 1)
                                 ?: resultSet.getObject(i + 1, type)
                     }
                     if (!constructor.isAccessible) constructor.isAccessible = true
