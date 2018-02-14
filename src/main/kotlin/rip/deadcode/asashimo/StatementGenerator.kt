@@ -12,7 +12,11 @@ internal object StatementGenerator {
 
     fun create(conn: Connection, registry: AsashimoRegistry, sql: String, params: Map<String, Any?>): PreparedStatement {
 
-        if (params.isEmpty()) return conn.prepareStatement(sql)
+        if (params.isEmpty()) {
+            logger.debug("SQL: {}", sql)
+            logger.trace("Params: -")
+            return conn.prepareStatement(sql)
+        }
 
         val tokens = lex(sql)
         checkState(!tokens.contains("?"), "Use named parameter instead of positional parameter.")
