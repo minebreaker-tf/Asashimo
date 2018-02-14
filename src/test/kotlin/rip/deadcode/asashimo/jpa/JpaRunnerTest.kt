@@ -6,6 +6,8 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import rip.deadcode.asashimo.AsashimoConfig
 import rip.deadcode.asashimo.AsashimoRegistry
+import rip.deadcode.asashimo.manipulation.BasicRetriever
+import rip.deadcode.asashimo.manipulation.BasicSetter
 import rip.deadcode.asashimo.resultmapper.JpaResultMapper
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -31,9 +33,11 @@ class JpaRunnerTest {
     fun testPersist() {
 
         val registry = AsashimoRegistry({ mock(DataSource::class.java) },
-                                        AsashimoConfig(),
-                                        JpaResultMapper,
-                                        mock(ListeningExecutorService::class.java))
+                AsashimoConfig(),
+                JpaResultMapper,
+                mock(ListeningExecutorService::class.java),
+                BasicRetriever,
+                BasicSetter)
         val conn = mock(Connection::class.java)
         val stmt = mock(PreparedStatement::class.java)
         `when`(conn.prepareStatement("insert into user (user_id, user_name) values(?, ?)")).thenReturn(stmt)

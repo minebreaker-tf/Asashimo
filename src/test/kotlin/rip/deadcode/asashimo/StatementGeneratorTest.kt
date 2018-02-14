@@ -6,6 +6,8 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
+import rip.deadcode.asashimo.manipulation.BasicRetriever
+import rip.deadcode.asashimo.manipulation.BasicSetter
 import rip.deadcode.asashimo.resultmapper.BeanResultMapper
 import java.sql.Connection
 import java.sql.PreparedStatement
@@ -21,7 +23,9 @@ class StatementGeneratorTest {
                 { mock(DataSource::class.java) },
                 AsashimoConfig(),
                 BeanResultMapper,
-                mock(ListeningExecutorService::class.java))
+                mock(ListeningExecutorService::class.java),
+                BasicRetriever,
+                BasicSetter)
     }
 
     @Test

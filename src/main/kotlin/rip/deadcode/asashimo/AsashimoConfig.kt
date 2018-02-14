@@ -5,8 +5,11 @@ import java.time.ZoneOffset
 
 data class AsashimoConfig(
         val resetDataSourceWhenExceptionOccurred: Boolean = true,
+
         @Experimental
         val java8dateConversionStrategy: Java8DateConversionStrategy = Java8DateConversionStrategy.RAW,
+        @Experimental
+        val serverZoneOffset: ZoneOffset = ZoneOffset.UTC,
         @Experimental
         val databaseZoneOffset: ZoneOffset = ZoneOffset.UTC
 )

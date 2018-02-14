@@ -14,7 +14,7 @@ object JpaResultMapper : GeneralResultMapper {
 
         val meta = resultSet.metaData
         val columnNamesWithIndex = (1..meta.columnCount).associate { it to meta.getColumnName(it) }
-        // TODO setter mode
+        // TODO upstream mode
         val fields = cls.java.declaredFields
         val correspondingColumnNames = fields.associateBy { field ->
             field.isAccessible = true
@@ -29,7 +29,7 @@ object JpaResultMapper : GeneralResultMapper {
 
         for ((i, column) in columnNamesWithIndex) {
             val field = correspondingColumnNames[column.toLowerCase()] ?: continue
-            field.set(instance, resultSet.getUnknown(i, field.type.kotlin, registry.config))
+            field.set(instance, resultSet.getUnknown(i, field.type.kotlin, registry))
         }
 
         return instance

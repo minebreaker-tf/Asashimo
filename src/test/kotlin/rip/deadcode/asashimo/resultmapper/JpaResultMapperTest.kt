@@ -8,6 +8,8 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import rip.deadcode.asashimo.AsashimoConfig
 import rip.deadcode.asashimo.AsashimoRegistry
+import rip.deadcode.asashimo.manipulation.BasicRetriever
+import rip.deadcode.asashimo.manipulation.BasicSetter
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import javax.persistence.Column
@@ -33,7 +35,9 @@ class JpaResultMapperTest {
                 { Mockito.mock(DataSource::class.java) },
                 AsashimoConfig(),
                 JpaResultMapper,
-                Mockito.mock(ListeningExecutorService::class.java)
+                Mockito.mock(ListeningExecutorService::class.java),
+                BasicRetriever,
+                BasicSetter
         )
 
         val rs = mock(ResultSet::class.java)

@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.util.concurrent.ListeningExecutorService
 import com.google.common.util.concurrent.MoreExecutors
+import rip.deadcode.asashimo.manipulation.*
 import rip.deadcode.asashimo.resultmapper.ConstructorResultMapper
 import rip.deadcode.asashimo.resultmapper.GeneralResultMapper
 import java.util.concurrent.Executors
@@ -42,7 +43,9 @@ object Connectors {
                 dataSourceFactory,
                 config,
                 defaultResultMapper,
-                jvmUniqueExecutor
+                jvmUniqueExecutor,
+                resolveRetrievers(config),
+                resolveSetters(config)
         ))
     }
 
@@ -57,6 +60,32 @@ object Connectors {
         } else {
             DefaultConnector(registry)
         }
+    }
+
+    private fun resolveRetrievers(config: AsashimoConfig): Retriever {
+
+        val base = BasicRetriever
+        val java8dateTime = config.java8dateConversionStrategy.getRetriever(config)
+
+        val resolved = if (java8dateTime != null) {
+            base.withFallback(java8dateTime)
+        } else {
+            base
+        }
+        return resolved.withFallback(AnyRetriever)
+    }
+
+    private fun resolveSetters(config: AsashimoConfig): Setter {
+
+        val base = BasicSetter
+        val java8dateTime = config.java8dateConversionStrategy.getSetter(config)
+
+        val resolved = if (java8dateTime != null) {
+            base.withFallback(java8dateTime)
+        } else {
+            base
+        }
+        return resolved.withFallback(AnySetter)
     }
 
 }

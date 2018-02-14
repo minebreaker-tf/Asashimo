@@ -2,7 +2,6 @@ package rip.deadcode.asashimo.resultmapper
 
 import com.google.common.annotations.VisibleForTesting
 import org.slf4j.LoggerFactory
-import rip.deadcode.asashimo.AsashimoConfig
 import rip.deadcode.asashimo.AsashimoException
 import rip.deadcode.asashimo.AsashimoRegistry
 import java.sql.ResultSet
@@ -14,14 +13,14 @@ object ConstructorResultMapper : GeneralResultMapper {
     private val logger = LoggerFactory.getLogger(ConstructorResultMapper::class.java)
 
     override fun <T : Any> map(registry: AsashimoRegistry, cls: KClass<T>, resultSet: ResultSet): T {
-        return convertToBasicType(cls, resultSet, registry.config)
-                ?: convertWithAllArgsConstructor(cls, resultSet, registry.config)
+        return convertToBasicType(cls, resultSet, registry)
+                ?: convertWithAllArgsConstructor(cls, resultSet, registry)
                 ?: throw AsashimoException("Failed to map ResultSet to class '${cls.java.canonicalName}'")
     }
 
     @VisibleForTesting
     internal fun <T : Any> convertWithAllArgsConstructor(
-            cls: KClass<T>, resultSet: ResultSet, config: AsashimoConfig): T? {
+            cls: KClass<T>, resultSet: ResultSet, registry: AsashimoRegistry): T? {
 
         return try {
             val resultSize = resultSet.metaData.columnCount
@@ -36,7 +35,8 @@ object ConstructorResultMapper : GeneralResultMapper {
                     val types = constructor.parameterTypes
                     val args = arrayOfNulls<Any>(types.size)
                     for ((i, type) in types.withIndex()) {
-                        args[i] = resultSet.getUnknown<Any>(i + 1, type.kotlin, config) ?: resultSet.getObject(i + 1, type)
+                        args[i] = resultSet.getUnknown<Any>(i + 1, type.kotlin, registry)
+                                ?: resultSet.getObject(i + 1, type)
                     }
                     if (!constructor.isAccessible) constructor.isAccessible = true
                     @Suppress("UNCHECKED_CAST")

@@ -216,6 +216,7 @@ TODO: Find better pattern
 * Fetch interface API
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * Upsert support
+* Registry builder
 * Understandable error message
 * Performance tests and cache things if necessary
 * Documentation

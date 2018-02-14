@@ -1,20 +1,39 @@
 package rip.deadcode.asashimo.resultmapper
 
 import com.google.common.truth.Truth.assertThat
+import com.google.common.util.concurrent.ListeningExecutorService
+import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import rip.deadcode.asashimo.AsashimoConfig
+import rip.deadcode.asashimo.AsashimoRegistry
+import rip.deadcode.asashimo.manipulation.BasicRetriever
+import rip.deadcode.asashimo.manipulation.BasicSetter
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
+import javax.sql.DataSource
 
 class DefaultResultMapperTest {
+
+    private var registry: AsashimoRegistry? = null
+
+    @Before
+    fun setUp() {
+        this.registry = AsashimoRegistry(
+                { mock(DataSource::class.java) },
+                AsashimoConfig(),
+                ConstructorResultMapper,
+                mock(ListeningExecutorService::class.java),
+                BasicRetriever,
+                BasicSetter)
+    }
 
     @Test
     fun testBasicType1() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getInt(1)).thenReturn(123)
-        val res = convertToBasicType(Int::class, rs, AsashimoConfig())
+        val res = convertToBasicType(Int::class, rs, registry!!)
 
         assertThat(res).isEqualTo(123)
     }
@@ -23,7 +42,7 @@ class DefaultResultMapperTest {
     fun testBasicType2() {
         val rs = mock(ResultSet::class.java)
         `when`(rs.getBytes(1)).thenReturn(byteArrayOf(62, 63, 64))
-        val res = convertToBasicType(ByteArray::class, rs, AsashimoConfig())
+        val res = convertToBasicType(ByteArray::class, rs, registry!!)
 
         assertThat(res).isEqualTo(byteArrayOf(62, 63, 64))
     }
@@ -38,7 +57,7 @@ class DefaultResultMapperTest {
         `when`(rs.metaData).thenReturn(meta)
         `when`(rs.getInt(1)).thenReturn(123)
         `when`(rs.getString(2)).thenReturn("John")
-        val res = ConstructorResultMapper.convertWithAllArgsConstructor(User1::class, rs, AsashimoConfig())!!
+        val res = ConstructorResultMapper.convertWithAllArgsConstructor(User1::class, rs, registry!!)!!
 
         assertThat(res.id).isEqualTo(123)
         assertThat(res.name).isEqualTo("John")
@@ -72,7 +91,7 @@ class DefaultResultMapperTest {
         `when`(rs.metaData).thenReturn(meta)
         `when`(rs.getInt(1)).thenReturn(123)
         `when`(rs.getString(2)).thenReturn(null)
-        val res = ConstructorResultMapper.convertWithAllArgsConstructor(User3::class, rs, AsashimoConfig())!!
+        val res = ConstructorResultMapper.convertWithAllArgsConstructor(User3::class, rs, registry!!)!!
 
         assertThat(res.id).isEqualTo(123)
         assertThat(res.name).isNull()

@@ -3,14 +3,8 @@ package rip.deadcode.asashimo
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Preconditions.checkState
 import org.slf4j.LoggerFactory
-import rip.deadcode.asashimo.Java8DateConversionStrategy.*
-import java.io.InputStream
-import java.io.Reader
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.net.URL
-import java.sql.*
-import java.time.*
+import java.sql.Connection
+import java.sql.PreparedStatement
 
 internal object StatementGenerator {
 
@@ -67,70 +61,8 @@ internal object StatementGenerator {
 
     internal fun setParams(registry: AsashimoRegistry, stmt: PreparedStatement, paramsToSet: List<Any?>) {
 
-        // TODO refactoring for better readability and performance
-
         for ((i, param) in paramsToSet.withIndex()) {
-            when (param) {
-                is java.sql.Array -> stmt.setArray(i + 1, param)
-                is BigDecimal -> stmt.setBigDecimal(i + 1, param)
-                is InputStream -> stmt.setBinaryStream(i + 1, param)
-                is Blob -> stmt.setBlob(i + 1, param)
-                is Boolean -> stmt.setBoolean(i + 1, param)
-                is Byte -> stmt.setByte(i + 1, param)
-                is ByteArray -> stmt.setBytes(i + 1, param)
-                is Reader -> stmt.setCharacterStream(i + 1, param)
-                is Clob -> stmt.setClob(i + 1, param)
-                is java.sql.Date -> stmt.setDate(i + 1, param)
-                is Double -> stmt.setDouble(i + 1, param)
-                is Float -> stmt.setFloat(i + 1, param)
-                is Int -> stmt.setInt(i + 1, param)
-                is Long -> stmt.setLong(i + 1, param)
-                is Short -> stmt.setShort(i + 1, param)
-                is SQLXML -> stmt.setSQLXML(i + 1, param)
-                is String -> stmt.setString(i + 1, param)
-                is Time -> stmt.setTime(i + 1, param)
-                is Timestamp -> stmt.setTimestamp(i + 1, param)
-                is URL -> stmt.setURL(i + 1, param)
-
-            // Manual conversion
-                is BigInteger -> stmt.setBigDecimal(i + 1, param.toBigDecimal())
-
-                else -> {
-                    when (registry.config.java8dateConversionStrategy) {
-                        RAW -> stmt.setObject(i + 1, param)
-                        CONVERT -> {
-                            stmt.setObject(i + 1, when (param) {
-                                is ZonedDateTime -> {
-                                    Timestamp.valueOf(
-                                            param.withZoneSameInstant(registry.config.databaseZoneOffset).toLocalDateTime())
-                                }
-                                is OffsetDateTime -> {
-                                    Timestamp.valueOf(
-                                            param.withOffsetSameInstant(registry.config.databaseZoneOffset).toLocalDateTime())
-                                }
-                                is OffsetTime -> {
-                                    Time.valueOf(param.withOffsetSameInstant(registry.config.databaseZoneOffset).toLocalTime())
-                                }
-                                is LocalDateTime -> Timestamp.valueOf(param)
-                                is LocalDate -> java.sql.Date.valueOf(param)
-                                is LocalTime -> Time.valueOf(param)
-                                is Instant -> Timestamp.from(param)
-                                else -> param
-                            })
-                        }
-                        CONVERT_NONLOCAL -> {
-                            stmt.setObject(i + 1, when (param) {
-                                is ZonedDateTime -> param.withZoneSameInstant(registry.config.databaseZoneOffset)
-                                is OffsetDateTime -> {
-                                    param.withOffsetSameInstant(registry.config.databaseZoneOffset).toLocalDateTime()
-                                }
-                                is OffsetTime -> param.with(registry.config.databaseZoneOffset).toLocalTime()
-                                else -> param
-                            })
-                        }
-                    }
-                }
-            }
+            registry.setter.setValue(stmt, param, i + 1)
         }
     }
 
