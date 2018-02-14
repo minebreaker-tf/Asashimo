@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.MoreExecutors
 import rip.deadcode.asashimo.manipulation.*
 import rip.deadcode.asashimo.resultmapper.ConstructorResultMapper
 import rip.deadcode.asashimo.resultmapper.GeneralResultMapper
-import java.util.concurrent.Executors
 import javax.sql.DataSource
 
 /**
@@ -13,8 +12,8 @@ import javax.sql.DataSource
  */
 object Connectors {
 
-    private val jvmUniqueExecutor: ListeningExecutorService by lazy {
-        MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(8))
+    private val defaultExecutor: ListeningExecutorService by lazy {
+        MoreExecutors.listeningDecorator(MoreExecutors.newDirectExecutorService())
     }
 
     @JvmOverloads
@@ -43,7 +42,7 @@ object Connectors {
                 dataSourceFactory,
                 config,
                 defaultResultMapper,
-                jvmUniqueExecutor,
+                defaultExecutor,
                 resolveRetrievers(config),
                 resolveSetters(config)
         ))
