@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 object BasicRetriever : Retriever {
 
-    private val retrievableClass = listOf(
+    private val retrievableClass = setOf(
             java.sql.Array::class,
             BigDecimal::class,
             InputStream::class,
@@ -30,7 +30,9 @@ object BasicRetriever : Retriever {
             String::class,
             Time::class,
             Timestamp::class,
-            URL::class
+            URL::class,
+
+            BigInteger::class
     )
 
     override fun <T : Any> retrievable(cls: KClass<T>): Boolean {

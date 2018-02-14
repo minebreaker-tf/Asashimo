@@ -11,7 +11,7 @@ class ConvertToClassicRetriever(
         val databaseOffset: ZoneOffset
 ) : Retriever {
 
-    private val retrievableClass = listOf(
+    private val retrievableClass = setOf(
             ZonedDateTime::class,
             OffsetDateTime::class,
             OffsetTime::class,
@@ -77,7 +77,7 @@ class ConvertNonLocalToLocalRetriever(
         val databaseOffset: ZoneOffset
 ) : Retriever {
 
-    private val retrievableClass = listOf(
+    private val retrievableClass = setOf(
             ZonedDateTime::class,
             OffsetDateTime::class,
             OffsetTime::class
