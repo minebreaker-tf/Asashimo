@@ -9,7 +9,5 @@ data class AsashimoConfig(
         @Experimental
         val dateConversionStrategy: DateConversionStrategy = DateConversionStrategy.RAW,
         @Experimental
-        val serverZoneOffset: ZoneOffset = ZoneOffset.UTC,
-        @Experimental
         val databaseZoneOffset: ZoneOffset = ZoneOffset.UTC
 )
