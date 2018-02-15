@@ -2,6 +2,7 @@ package rip.deadcode.asashimo
 
 import com.google.common.base.Preconditions.checkState
 import com.google.common.collect.ImmutableList
+import rip.deadcode.asashimo.utils.Experimental
 import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
@@ -73,7 +74,6 @@ internal object Runner {
         return ImmutableList.copyOf(mutableList)
     }
 
-
     fun exec(
             conn: Connection,
             registry: AsashimoRegistry,
@@ -92,6 +92,26 @@ internal object Runner {
 
         val stmt = StatementGenerator.create(conn, registry, sql, params)
         return stmt.executeLargeUpdate()
+    }
+
+    @Experimental
+    fun execBatch(
+            conn: Connection,
+            registry: AsashimoRegistry,
+            sqls: List<String>): IntArray {
+
+        // TODO Fluent exception handling
+
+        conn.autoCommit = false
+
+        val stmt = conn.createStatement()
+        for (sql in sqls) {
+            stmt.addBatch(sql)
+        }
+
+        val result = stmt.executeBatch()
+        conn.commit()
+        return result
     }
 
 }

@@ -136,5 +136,7 @@ interface Connector {
     @Experimental
     fun <T : Any> find(id: Any, cls: KClass<T>): T
 
-}
+    @Experimental
+    fun batch(block: OfBatch.() -> Unit): IntArray
 
+}

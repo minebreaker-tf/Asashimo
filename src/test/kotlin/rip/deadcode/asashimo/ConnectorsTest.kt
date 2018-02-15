@@ -481,4 +481,21 @@ class ConnectorsTest {
         assertThat(users[0].name).isEqualTo("John")
     }
 
+    @Test
+    fun genericTest31() {
+
+        connector!!.exec("create table user(id int, name varchar)")
+
+        val count = connector!!.batch {
+            add("insert into user values(1, 'John')")
+            add("insert into user values(2, 'Jack')")
+        }
+
+        assertThat(count[0]).isEqualTo(1)
+        assertThat(count[1]).isEqualTo(1)
+
+        val tableCount = connector!!.fetch("select count(*) from user", Int::class)
+        assertThat(tableCount).isEqualTo(2)
+    }
+
 }
