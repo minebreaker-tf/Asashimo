@@ -139,4 +139,7 @@ interface Connector {
     @Experimental
     fun batch(block: OfBatch.() -> Unit): IntArray
 
+    @Experimental
+    fun batch(sql: String): OfBatchWith
+
 }

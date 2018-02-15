@@ -81,6 +81,7 @@ internal object Runner {
             params: Map<String, Any?> = mapOf()): Int {
 
         val stmt = StatementGenerator.create(conn, registry, sql, params)
+
         return stmt.executeUpdate()
     }
 
@@ -97,7 +98,7 @@ internal object Runner {
     @Experimental
     fun execBatch(
             conn: Connection,
-            registry: AsashimoRegistry,
+            @Suppress("UNUSED_PARAMETER") registry: AsashimoRegistry,
             sqls: List<String>): IntArray {
 
         // TODO Fluent exception handling
@@ -108,6 +109,24 @@ internal object Runner {
         for (sql in sqls) {
             stmt.addBatch(sql)
         }
+
+        val result = stmt.executeBatch()
+        conn.commit()
+        return result
+    }
+
+    @Experimental
+    fun execPreparedBatch(
+            conn: Connection,
+            registry: AsashimoRegistry,
+            sql: String,
+            params: Map<String, List<Any?>>): IntArray {
+
+        // TODO Fluent exception handling
+
+        conn.autoCommit = false
+
+        val stmt = StatementGenerator.createBatch(conn, registry, sql, params.mapValues { it.value.iterator() })
 
         val result = stmt.executeBatch()
         conn.commit()

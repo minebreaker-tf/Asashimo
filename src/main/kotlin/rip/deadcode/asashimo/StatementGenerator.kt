@@ -30,6 +30,30 @@ internal object StatementGenerator {
         return stmt
     }
 
+    fun createBatch(conn: Connection, registry: AsashimoRegistry, sql: String, params: Map<String, Iterator<Any?>>): PreparedStatement {
+
+        val tokens = lex(sql)
+        checkState(!tokens.contains("?"), "Use named parameter instead of positional parameter.")
+
+        val (sqlToExec, paramNamesToSet) = retrieveParamNamesToSet(tokens, params)
+
+        logger.debug("SQL: {}", sqlToExec)
+
+        val stmt = conn.prepareStatement(sqlToExec)
+
+        val paramIter = object : Iterator<List<Any?>> {
+            override fun next(): List<Any?> = paramNamesToSet.map { params[it]!!.next() }
+            override fun hasNext(): Boolean = params[paramNamesToSet[0]]!!.hasNext()
+        }
+
+        for (param in paramIter) {
+            setParams(registry, stmt, param)
+            stmt.addBatch()
+        }
+
+        return stmt
+    }
+
     private data class ConversionResult(val sql: String, val params: List<Any?>)
 
     private fun convertTokensToParamSet(tokens: List<String>, params: Map<String, Any?>): ConversionResult {
@@ -61,6 +85,31 @@ internal object StatementGenerator {
 
         val sqlToExec = resultTokens.joinToString(separator = " ")
         return ConversionResult(sqlToExec, paramsToSet)
+    }
+
+    private data class NamingResult(val sql: String, val names: List<String>)
+
+    private fun retrieveParamNamesToSet(tokens: List<String>, params: Map<String, Any?>): NamingResult {
+
+        // TODO refactoring
+        val resultTokens = mutableListOf<String>()
+        val paramNames = mutableListOf<String>()
+        for (token in tokens) {
+            var found = false
+            for (key in params.keys) {
+                if (token == ":" + key) {
+                    found = true
+                    // Batch does not support collection spreading currently
+                    resultTokens += "?"
+                    paramNames += key
+                    break
+                }
+            }
+            if (!found) resultTokens += token
+        }
+
+        val sqlToExec = resultTokens.joinToString(separator = " ")
+        return NamingResult(sqlToExec, paramNames)
     }
 
     internal fun setParams(registry: AsashimoRegistry, stmt: PreparedStatement, paramsToSet: List<Any?>) {

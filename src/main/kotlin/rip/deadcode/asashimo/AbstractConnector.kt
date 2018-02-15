@@ -141,12 +141,17 @@ internal abstract class AbstractConnector(
         try {
             val batch = OfBatchImpl()
             batch.block()
-            return Runner.execBatch(getConnection(), registry, batch.sqls)
-
+            getConnection().use {
+                return Runner.execBatch(it, registry, batch.sqls)
+            }
         } catch (e: Exception) {
             resetDataSourceCallback()
             throw e
         }
+    }
+
+    override fun batch(sql: String): OfBatchWith {
+        return OfBatchWithImpl(getConnection(), registry, sql, ::resetDataSourceCallback)
     }
 
     protected abstract fun getConnection(): Connection

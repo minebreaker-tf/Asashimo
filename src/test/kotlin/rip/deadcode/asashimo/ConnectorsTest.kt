@@ -498,4 +498,22 @@ class ConnectorsTest {
         assertThat(tableCount).isEqualTo(2)
     }
 
+    @Test
+    fun genericTest32() {
+
+        connector!!.exec("create table user(id int, name varchar)")
+
+        val count = connector!!.batch("insert into user values(:id, :name)")
+                .with(mapOf("id" to listOf(1, 2)))
+                .with(mapOf("name" to listOf("John", "Jack")))
+                .exec()
+
+        assertThat(count[0]).isEqualTo(1)
+        assertThat(count[1]).isEqualTo(1)
+
+        val users = connector!!.fetchAll("select * from user", User::class)
+        assertThat(users).hasSize(2)
+        assertThat(users).containsExactly(User(1, "John"), User(2, "Jack"))
+    }
+
 }
