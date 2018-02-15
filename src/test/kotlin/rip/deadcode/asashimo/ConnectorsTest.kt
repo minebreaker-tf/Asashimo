@@ -443,4 +443,22 @@ class ConnectorsTest {
         assertThat(result.name).isEqualTo("John")
     }
 
+    @Test
+    fun genericTest29() {
+
+        val users = connector!!.transactional {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+            savepoint {
+                exec("insert into user values(2, 'Jack')")
+                throw RuntimeException()
+            }
+            fetchAll("select * from user", User::class)
+        }
+
+        assertThat(users).hasSize(1)
+        assertThat(users[0].id).isEqualTo(1)
+        assertThat(users[0].name).isEqualTo("John")
+    }
+
 }

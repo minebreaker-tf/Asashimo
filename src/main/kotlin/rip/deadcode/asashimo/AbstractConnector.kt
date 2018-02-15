@@ -103,16 +103,16 @@ internal abstract class AbstractConnector(
         }
     }
 
-    override fun <T> transactional(block: OfUse.() -> T): T {
+    override fun <T> transactional(block: OfTransactional.() -> T): T {
         return OfWithImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).transactional(block)
     }
 
-    override fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T> {
+    override fun <T> transactionalLazy(block: OfTransactional.() -> T): Supplier<T> {
         return Supplier { transactional(block) }
     }
 
     override fun <T> transactionalAsync(
-            executorService: ListeningExecutorService?, block: OfUse.() -> T): ListenableFuture<T> {
+            executorService: ListeningExecutorService?, block: OfTransactional.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             transactional(block)
         }

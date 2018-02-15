@@ -4,7 +4,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
-internal class OfUseImpl(
+internal open class OfUseImpl(
         private val connection: Connection,
         private val registry: AsashimoRegistry,
         private val connectionResetCallback: () -> Unit,
@@ -23,8 +23,8 @@ internal class OfUseImpl(
     override fun <T : Any> fetch(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T {
         try {
             return Runner.fetch(connection, registry, sql, cls,
-                                resultMapper = resultMapper,
-                                params = params + internalParams)
+                    resultMapper = resultMapper,
+                    params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
@@ -34,8 +34,8 @@ internal class OfUseImpl(
     override fun <T : Any> fetchMaybe(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): T? {
         try {
             return Runner.fetchMaybe(connection, registry, sql, cls,
-                                     resultMapper = resultMapper,
-                                     params = params + internalParams)
+                    resultMapper = resultMapper,
+                    params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
@@ -45,8 +45,8 @@ internal class OfUseImpl(
     override fun <T : Any> fetchAll(sql: String, cls: KClass<T>, resultMapper: ((ResultSet) -> T)?): List<T> {
         try {
             return Runner.fetchAll(connection, registry, sql, cls,
-                                   resultMapper = resultMapper,
-                                   params = params + internalParams)
+                    resultMapper = resultMapper,
+                    params = params + internalParams)
         } catch (e: Exception) {
             connectionResetCallback()
             throw e
