@@ -16,19 +16,21 @@ internal object Runner {
             params: Map<String, Any?> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): T {
 
-        val stmt = StatementGenerator.create(conn, registry, sql, params)
-        val execResult = stmt.execute()
-        check(execResult)
+        StatementGenerator.create(conn, registry, sql, params).use { stmt ->
 
-        val rs = stmt.resultSet
-        val hadValue = rs.next()
-        if (!hadValue) throw AsashimoNoResultException() // Assure successful
+            val execResult = stmt.execute()
+            check(execResult)
 
-        val result = resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+            stmt.resultSet.use { rs ->
+                val hadValue = rs.next()
+                if (!hadValue) throw AsashimoNoResultException() // Assure successful
 
-        if (rs.next()) throw AsashimoNonUniqueResultException()
+                val result = resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+                if (rs.next()) throw AsashimoNonUniqueResultException()
 
-        return result
+                return result
+            }
+        }
     }
 
     fun <T : Any> fetchMaybe(
@@ -39,14 +41,17 @@ internal object Runner {
             params: Map<String, Any?> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): T? {
 
-        val stmt = StatementGenerator.create(conn, registry, sql, params)
-        val rs = stmt.resultSet
+        StatementGenerator.create(conn, registry, sql, params).use { stmt ->
 
-        return if (rs == null) {
-            null
-        } else {
-            checkState(rs.next(), "No Result")  // Assure successful
-            resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+            stmt.resultSet.use { rs ->
+
+                return if (rs == null) {
+                    null
+                } else {
+                    checkState(rs.next(), "No Result")  // Assure successful
+                    resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+                }
+            }
         }
     }
 
@@ -58,19 +63,24 @@ internal object Runner {
             params: Map<String, Any?> = mapOf(),
             resultMapper: ((ResultSet) -> T)? = null): List<T> {
 
-        val stmt = StatementGenerator.create(conn, registry, sql, params)
-        val result = stmt.execute()
-        check(result)
+        StatementGenerator.create(conn, registry, sql, params).use { stmt ->
 
-        val rs = stmt.resultSet
-        val mutableList = mutableListOf<T>()
-        while (rs.next()) {
-            val row = resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
-            mutableList.add(row)
+            val result = stmt.execute()
+            check(result)
+
+            stmt.resultSet.use { rs ->
+
+                val mutableList = mutableListOf<T>()
+                while (rs.next()) {
+                    val row = resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+                    mutableList.add(row)
+                }
+
+                // Kotlinはリストをイミュータブルにする手段を提供しない...
+                return ImmutableList.copyOf(mutableList)
+            }
         }
 
-        // Kotlinはリストをイミュータブルにする手段を提供しない...
-        return ImmutableList.copyOf(mutableList)
     }
 
 
@@ -80,8 +90,10 @@ internal object Runner {
             sql: String,
             params: Map<String, Any?> = mapOf()): Int {
 
-        val stmt = StatementGenerator.create(conn, registry, sql, params)
-        return stmt.executeUpdate()
+        StatementGenerator.create(conn, registry, sql, params).use {
+            return it.executeUpdate()
+        }
+
     }
 
     fun execLarge(
@@ -90,8 +102,9 @@ internal object Runner {
             sql: String,
             params: Map<String, Any?> = mapOf()): Long {
 
-        val stmt = StatementGenerator.create(conn, registry, sql, params)
-        return stmt.executeLargeUpdate()
+        StatementGenerator.create(conn, registry, sql, params).use {
+            return it.executeLargeUpdate()
+        }
     }
 
 }

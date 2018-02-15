@@ -22,10 +22,11 @@ object JpaRunner {
         val sql = "insert into ${escape(info.tableName)} (${escape(allColumns.joinToString())}) " +
                 "values(${escape("?, ".repeat(info.columnNames.size))}?)"
 
-        val stmt = conn.prepareStatement(sql)
-        StatementGenerator.setParams(registry, stmt, listOf(info.id) + info.columns)
+        conn.prepareStatement(sql).use {
 
-        stmt.execute()
+            StatementGenerator.setParams(registry, it, listOf(info.id) + info.columns)
+            it.execute()
+        }
     }
 
     @Experimental
@@ -35,16 +36,21 @@ object JpaRunner {
 
         val sql = "select ${escape(clsInfo.idName)}, ${escape(clsInfo.columnNames.joinToString(", "))} " +
                 "from ${escape(clsInfo.tableName)} where ${escape(clsInfo.idName)} = ?"
-        val stmt = conn.prepareStatement(sql)
-        stmt.setObject(1, id)
-        stmt.execute()
-        val rs = stmt.resultSet
 
-        if (!rs.next()) throw NoResultException()
+        conn.prepareStatement(sql).use { stmt ->
 
-        val result = JpaResultMapper.map(registry, cls, rs)
-        if (rs.next()) throw NonUniqueResultException()
-        return result
+            stmt.setObject(1, id)
+            stmt.execute()
+
+            stmt.resultSet.use { rs ->
+
+                if (!rs.next()) throw NoResultException()
+
+                val result = JpaResultMapper.map(registry, cls, rs)
+                if (rs.next()) throw NonUniqueResultException()
+                return result
+            }
+        }
     }
 
 }
