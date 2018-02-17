@@ -1,6 +1,5 @@
 package rip.deadcode.asashimo
 
-import com.google.common.base.Preconditions.checkState
 import com.google.common.collect.ImmutableList
 import rip.deadcode.asashimo.utils.Experimental
 import java.sql.Connection
@@ -28,7 +27,6 @@ internal object Runner {
         val result = resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
 
         if (rs.next()) throw AsashimoNonUniqueResultException()
-
         return result
     }
 
@@ -41,14 +39,17 @@ internal object Runner {
             resultMapper: ((ResultSet) -> T)? = null): T? {
 
         val stmt = StatementGenerator.create(conn, registry, sql, params)
+        stmt.execute()
         val rs = stmt.resultSet
 
-        return if (rs == null) {
-            null
-        } else {
-            checkState(rs.next(), "No Result")  // Assure successful
+        val result = if (rs.next()) {
             resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+        } else {
+            null
         }
+
+        if (rs.next()) throw AsashimoNonUniqueResultException()
+        return result
     }
 
     fun <T : Any> fetchAll(

@@ -210,6 +210,7 @@ fun prepared() {
         .with(mapOf(
             "id" to listOf(1, 2),
             "name" to listOf("John", "Jack")))
+        .exec()
 }
 ```
 
@@ -234,8 +235,6 @@ TODO: Find better pattern
 ## TODOs
 
 * API for Java
-* Savepoint
-* Batch
 * Fetch interface API
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * Upsert support

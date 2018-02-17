@@ -315,6 +315,16 @@ class ConnectorsTest {
     }
 
     @Test
+    fun genericTest33() {
+        connector!!.use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+        }
+        val user = connector!!.fetchMaybe("select * from user", User::class)
+        assertThat(user).isEqualTo(User(1, "John"))
+    }
+
+    @Test
     fun genericTest21() {
         val dataSource = JdbcDataSource().apply {
             setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
