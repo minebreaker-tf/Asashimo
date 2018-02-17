@@ -102,16 +102,16 @@ interface OfWith {
      * @see Connector.transactional
      */
     @CanIgnoreReturnValue
-    fun <T> transactional(block: OfUse.() -> T): T
+    fun <T> transactional(block: OfTransactional.() -> T): T
 
     /**
      * @see Connector.transactionalLazy
      */
-    fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T>
+    fun <T> transactionalLazy(block: OfTransactional.() -> T): Supplier<T>
 
     /**
      * @see Connector.transactionalAsync
      */
     fun <T> transactionalAsync(
-            executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
+            executorService: ListeningExecutorService? = null, block: OfTransactional.() -> T): ListenableFuture<T>
 }

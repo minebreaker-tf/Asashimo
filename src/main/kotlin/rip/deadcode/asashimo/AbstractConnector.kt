@@ -103,16 +103,16 @@ internal abstract class AbstractConnector(
         }
     }
 
-    override fun <T> transactional(block: OfUse.() -> T): T {
+    override fun <T> transactional(block: OfTransactional.() -> T): T {
         return OfWithImpl(getConnection(), registry, ::resetDataSourceCallback, mapOf()).transactional(block)
     }
 
-    override fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T> {
+    override fun <T> transactionalLazy(block: OfTransactional.() -> T): Supplier<T> {
         return Supplier { transactional(block) }
     }
 
     override fun <T> transactionalAsync(
-            executorService: ListeningExecutorService?, block: OfUse.() -> T): ListenableFuture<T> {
+            executorService: ListeningExecutorService?, block: OfTransactional.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             transactional(block)
         }
@@ -134,6 +134,24 @@ internal abstract class AbstractConnector(
             resetDataSourceCallback()
             throw AsashimoException("find failed.", e)
         }
+    }
+
+    override fun batch(block: OfBatch.() -> Unit): IntArray {
+
+        try {
+            val batch = OfBatchImpl()
+            batch.block()
+            getConnection().use {
+                return Runner.execBatch(it, registry, batch.sqls)
+            }
+        } catch (e: Exception) {
+            resetDataSourceCallback()
+            throw e
+        }
+    }
+
+    override fun batch(sql: String): OfBatchWith {
+        return OfBatchWithImpl(getConnection(), registry, sql, ::resetDataSourceCallback)
     }
 
     protected abstract fun getConnection(): Connection

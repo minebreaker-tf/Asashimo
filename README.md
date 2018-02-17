@@ -192,6 +192,29 @@ fun persist() {
 ```
 
 
+#### Batch
+
+```kotlin
+fun sample() {
+
+    val updateCount = connector.batch {
+        add("insert into user values(1, 'John'")
+        add("insert into user values(2, 'Jack'")
+    }
+}
+
+fun prepared() {
+
+    val updateCount = connector
+        .batch("insert into user values(:id, :name")
+        .with(mapOf(
+            "id" to listOf(1, 2),
+            "name" to listOf("John", "Jack")))
+        .exec()
+}
+```
+
+
 ## IntelliJ Language Injection
 
 File -> Settings -> Editor -> Language Injections
@@ -212,8 +235,6 @@ TODO: Find better pattern
 ## TODOs
 
 * API for Java
-* Savepoint
-* Batch
 * Fetch interface API
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * Upsert support

@@ -120,13 +120,13 @@ internal class OfWithImpl(
         }
     }
 
-    override fun <T> transactional(block: OfUse.() -> T): T {
+    override fun <T> transactional(block: OfTransactional.() -> T): T {
         try {
             if (conn.transactionIsolation == Connection.TRANSACTION_NONE) {
                 throw AsashimoException("Transaction is not available.")
             }
             conn.autoCommit = false
-            val result = OfUseImpl(conn, registry, connectionResetCallback, params + internalParams).block()
+            val result = OfTransactionalImpl(conn, registry, connectionResetCallback, params + internalParams).block()
             conn.commit()
             return result
         } catch (e: Exception) {
@@ -154,12 +154,12 @@ internal class OfWithImpl(
         }
     }
 
-    override fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T> {
+    override fun <T> transactionalLazy(block: OfTransactional.() -> T): Supplier<T> {
         return Supplier { transactional(block) }
     }
 
     override fun <T> transactionalAsync(
-            executorService: ListeningExecutorService?, block: OfUse.() -> T): ListenableFuture<T> {
+            executorService: ListeningExecutorService?, block: OfTransactional.() -> T): ListenableFuture<T> {
         return (executorService ?: registry.executor).submit<T> {
             transactional(block)
         }

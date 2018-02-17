@@ -315,6 +315,16 @@ class ConnectorsTest {
     }
 
     @Test
+    fun genericTest33() {
+        connector!!.use {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+        }
+        val user = connector!!.fetchMaybe("select * from user", User::class)
+        assertThat(user).isEqualTo(User(1, "John"))
+    }
+
+    @Test
     fun genericTest21() {
         val dataSource = JdbcDataSource().apply {
             setURL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
@@ -441,6 +451,79 @@ class ConnectorsTest {
 
         assertThat(result.id).isEqualTo(123)
         assertThat(result.name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest29() {
+
+        val users = connector!!.transactional {
+            exec("create table user(id int, name varchar)")
+            exec("insert into user values(1, 'John')")
+            savepoint {
+                exec("insert into user values(2, 'Jack')")
+                throw RuntimeException()
+            }
+            fetchAll("select * from user", User::class)
+        }
+
+        assertThat(users).hasSize(1)
+        assertThat(users[0].id).isEqualTo(1)
+        assertThat(users[0].name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest30() {
+
+        val users = connector!!.transactional {
+            exec("create table user(id int, name varchar)")
+            savepoint("a") {
+                exec("insert into user values(1, 'John')")
+                savepoint("b") {
+                    exec("insert into user values(2, 'Jack')")
+                    throw RuntimeException()
+                }
+            }
+            fetchAll("select * from user", User::class)
+        }
+
+        assertThat(users).hasSize(1)
+        assertThat(users[0].id).isEqualTo(1)
+        assertThat(users[0].name).isEqualTo("John")
+    }
+
+    @Test
+    fun genericTest31() {
+
+        connector!!.exec("create table user(id int, name varchar)")
+
+        val count = connector!!.batch {
+            add("insert into user values(1, 'John')")
+            add("insert into user values(2, 'Jack')")
+        }
+
+        assertThat(count[0]).isEqualTo(1)
+        assertThat(count[1]).isEqualTo(1)
+
+        val tableCount = connector!!.fetch("select count(*) from user", Int::class)
+        assertThat(tableCount).isEqualTo(2)
+    }
+
+    @Test
+    fun genericTest32() {
+
+        connector!!.exec("create table user(id int, name varchar)")
+
+        val count = connector!!.batch("insert into user values(:id, :name)")
+                .with(mapOf("id" to listOf(1, 2)))
+                .with(mapOf("name" to listOf("John", "Jack")))
+                .exec()
+
+        assertThat(count[0]).isEqualTo(1)
+        assertThat(count[1]).isEqualTo(1)
+
+        val users = connector!!.fetchAll("select * from user", User::class)
+        assertThat(users).hasSize(2)
+        assertThat(users).containsExactly(User(1, "John"), User(2, "Jack"))
     }
 
 }

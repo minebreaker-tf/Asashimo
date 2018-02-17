@@ -1,7 +1,7 @@
 package rip.deadcode.asashimo
 
-import com.google.common.base.Preconditions.checkState
 import com.google.common.collect.ImmutableList
+import rip.deadcode.asashimo.utils.Experimental
 import java.sql.Connection
 import java.sql.ResultSet
 import kotlin.reflect.KClass
@@ -43,14 +43,17 @@ internal object Runner {
 
         StatementGenerator.create(conn, registry, sql, params).use { stmt ->
 
+            stmt.execute()
             stmt.resultSet.use { rs ->
 
-                return if (rs == null) {
-                    null
-                } else {
-                    checkState(rs.next(), "No Result")  // Assure successful
+                val result = if (rs.next()) {
                     resultMapper?.invoke(rs) ?: registry.defaultResultMapper.map(registry, cls, rs)
+                } else {
+                    null
                 }
+
+                if (rs.next()) throw AsashimoNonUniqueResultException()
+                return result
             }
         }
     }
@@ -83,7 +86,6 @@ internal object Runner {
 
     }
 
-
     fun exec(
             conn: Connection,
             registry: AsashimoRegistry,
@@ -93,7 +95,6 @@ internal object Runner {
         StatementGenerator.create(conn, registry, sql, params).use {
             return it.executeUpdate()
         }
-
     }
 
     fun execLarge(
@@ -105,6 +106,44 @@ internal object Runner {
         StatementGenerator.create(conn, registry, sql, params).use {
             return it.executeLargeUpdate()
         }
+    }
+
+    @Experimental
+    fun execBatch(
+            conn: Connection,
+            @Suppress("UNUSED_PARAMETER") registry: AsashimoRegistry,
+            sqls: List<String>): IntArray {
+
+        // TODO Fluent exception handling
+
+        conn.autoCommit = false
+
+        val stmt = conn.createStatement()
+        for (sql in sqls) {
+            stmt.addBatch(sql)
+        }
+
+        val result = stmt.executeBatch()
+        conn.commit()
+        return result
+    }
+
+    @Experimental
+    fun execPreparedBatch(
+            conn: Connection,
+            registry: AsashimoRegistry,
+            sql: String,
+            params: Map<String, List<Any?>>): IntArray {
+
+        // TODO Fluent exception handling
+
+        conn.autoCommit = false
+
+        val stmt = StatementGenerator.createBatch(conn, registry, sql, params.mapValues { it.value.iterator() })
+
+        val result = stmt.executeBatch()
+        conn.commit()
+        return result
     }
 
 }

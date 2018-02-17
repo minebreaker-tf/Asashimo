@@ -124,11 +124,11 @@ interface Connector {
     fun <T> useAsync(executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
 
     @CanIgnoreReturnValue
-    fun <T> transactional(block: OfUse.() -> T): T
+    fun <T> transactional(block: OfTransactional.() -> T): T
 
-    fun <T> transactionalLazy(block: OfUse.() -> T): Supplier<T>
+    fun <T> transactionalLazy(block: OfTransactional.() -> T): Supplier<T>
     fun <T> transactionalAsync(
-            executorService: ListeningExecutorService? = null, block: OfUse.() -> T): ListenableFuture<T>
+            executorService: ListeningExecutorService? = null, block: OfTransactional.() -> T): ListenableFuture<T>
 
     @Experimental
     fun persist(entity: Any)
@@ -136,5 +136,10 @@ interface Connector {
     @Experimental
     fun <T : Any> find(id: Any, cls: KClass<T>): T
 
-}
+    @Experimental
+    fun batch(block: OfBatch.() -> Unit): IntArray
 
+    @Experimental
+    fun batch(sql: String): OfBatchWith
+
+}
