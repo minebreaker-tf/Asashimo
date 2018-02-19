@@ -120,7 +120,9 @@ internal abstract class AbstractConnector(
 
     override fun persist(entity: Any) {
         try {
-            return JpaRunner.persist(registry, getConnection(), entity)
+            getConnection().use {
+                return JpaRunner.persist(registry, it, entity)
+            }
         } catch (e: Exception) {
             resetDataSourceCallback()
             throw AsashimoException("persist failed.", e)
@@ -129,7 +131,9 @@ internal abstract class AbstractConnector(
 
     override fun <T : Any> find(id: Any, cls: KClass<T>): T {
         try {
-            return JpaRunner.find(registry, getConnection(), id, cls)
+            getConnection().use {
+                return JpaRunner.find(registry, it, id, cls)
+            }
         } catch (e: Exception) {
             resetDataSourceCallback()
             throw AsashimoException("find failed.", e)
