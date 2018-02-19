@@ -35,7 +35,7 @@ repositories {
     }
 }
 dependencies {
-    compile 'rip.deadcode:asashimo:0.2.5'
+    compile 'rip.deadcode:asashimo:0.2.6'
 }
 ```
 
@@ -188,6 +188,50 @@ fun persist() {
 
     assertThat(result.id).isEqualTo(123)
     assertThat(result.name).isEqualTo("John")
+}
+```
+
+
+#### Savepoint
+
+```kotlin
+fun savepoint() {
+    val users = connector!!.transactional {
+        exec("create table user(id int, name varchar)")
+        savepoin {
+            exec("insert into user values(1, 'John')")
+            savepoint {
+                exec("insert into user values(2, 'Jack')")
+                throw RuntimeException()
+            }
+            exec("insert into user values(3, 'Jane')")
+        }
+        fetchAll("select * from user", User::class)
+    }
+    assertThat(users).containsExactly(User(1, "John"), User(3, "Jane"))
+}
+```
+
+
+#### Batch
+
+```kotlin
+fun sample() {
+
+    val updateCount = connector.batch {
+        add("insert into user values(1, 'John'")
+        add("insert into user values(2, 'Jack'")
+    }
+}
+
+fun prepared() {
+
+    val updateCount = connector
+        .batch("insert into user values(:id, :name")
+        .with(mapOf(
+            "id" to listOf(1, 2),
+            "name" to listOf("John", "Jack")))
+        .exec()
 }
 ```
 

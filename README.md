@@ -192,6 +192,27 @@ fun persist() {
 ```
 
 
+#### Savepoint
+
+```kotlin
+fun savepoint() {
+    val users = connector!!.transactional {
+        exec("create table user(id int, name varchar)")
+        savepoint("a") {
+            exec("insert into user values(1, 'John')")
+            savepoint("b") {
+                exec("insert into user values(2, 'Jack')")
+                throw RuntimeException()
+            }
+            exec("insert into user values(3, 'Jane')")
+        }
+        fetchAll("select * from user", User::class)
+    }
+    assertThat(users).containsExactly(User(1, "John"), User(3, "Jane"))
+}
+```
+
+
 #### Batch
 
 ```kotlin
