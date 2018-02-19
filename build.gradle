@@ -7,12 +7,14 @@ buildscript {
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.1.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.15'
     }
 }
 
 apply plugin: 'kotlin'
+apply plugin: 'org.junit.platform.gradle.plugin'
 apply plugin: 'jacoco'
 apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.jfrog.bintray'
@@ -36,14 +38,15 @@ dependencies {
             'org.slf4j:slf4j-api:1.7.25',
     )
     testCompile(
-            'junit:junit:4.12',
+            'org.junit.jupiter:junit-jupiter-api:5.1.0',
             'org.slf4j:jul-to-slf4j:1.7.25', // Guava uses java.util.logging
             'ch.qos.logback:logback-classic:1.2.3',
             'com.google.truth:truth:0.39',
-            'org.mockito:mockito-core:2.13.0',
+            'org.mockito:mockito-core:2.15.0',
 
             'com.h2database:h2:1.4.196',
     )
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
 }
 
 compileKotlin {
@@ -77,6 +80,23 @@ artifacts {
     archives jar
     archives sourcesJar
     archives javadocJar
+}
+
+jacoco {
+    applyTo junitPlatformTest
+}
+
+junitPlatformTest {
+    jacoco {
+        destinationFile = file("${buildDir}/jacoco/test.exec")
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
 }
 
 bintray {

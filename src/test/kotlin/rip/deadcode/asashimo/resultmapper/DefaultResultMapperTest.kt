@@ -2,8 +2,8 @@ package rip.deadcode.asashimo.resultmapper
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.ListeningExecutorService
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import rip.deadcode.asashimo.AsashimoConfig
@@ -18,7 +18,7 @@ class DefaultResultMapperTest {
 
     private var registry: AsashimoRegistry? = null
 
-    @Before
+    @BeforeEach
     fun setUp() {
         this.registry = AsashimoRegistry(
                 { mock(DataSource::class.java) },

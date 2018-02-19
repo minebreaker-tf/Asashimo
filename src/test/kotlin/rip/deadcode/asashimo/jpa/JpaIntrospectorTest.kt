@@ -1,7 +1,7 @@
 package rip.deadcode.asashimo.jpa
 
 import com.google.common.truth.Truth.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import javax.persistence.Column
 import javax.persistence.Id
 import javax.persistence.Table

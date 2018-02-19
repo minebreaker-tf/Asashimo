@@ -2,9 +2,9 @@ package rip.deadcode.asashimo
 
 import com.google.common.truth.Truth.assertThat
 import org.h2.jdbcx.JdbcDataSource
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import rip.deadcode.asashimo.DateConversionStrategy.CONVERT_TO_CLASSIC
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -15,7 +15,7 @@ class Java8DateConversionStrategyTest {
 
     private var connector: Connector? = null
 
-    @Before
+    @BeforeEach
     fun setUp() {
 
         val dataSource = JdbcDataSource().apply {
@@ -26,7 +26,7 @@ class Java8DateConversionStrategyTest {
         connector = Connectors.newInstance(dataSource, AsashimoConfig(dateConversionStrategy = CONVERT_TO_CLASSIC))
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         // コネクションごとにデータベースを閉じない設定にしているため、手動でクローズしてDBをリセットする
         connector?.exec("shutdown")

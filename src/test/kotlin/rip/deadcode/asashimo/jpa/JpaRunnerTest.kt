@@ -1,7 +1,7 @@
 package rip.deadcode.asashimo.jpa
 
 import com.google.common.util.concurrent.ListeningExecutorService
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import rip.deadcode.asashimo.AsashimoConfig

@@ -3,10 +3,7 @@ package rip.deadcode.asashimo
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
 import org.h2.jdbcx.JdbcDataSource
-import org.hamcrest.CoreMatchers.isA
-import org.junit.*
-import org.junit.Assert.fail
-import org.junit.rules.ExpectedException
+import org.junit.jupiter.api.*
 import rip.deadcode.asashimo.resultmapper.MapResultMapper
 import java.sql.ResultSet
 import javax.persistence.Column
@@ -17,12 +14,7 @@ class ConnectorsTest {
 
     private var connector: Connector? = null
 
-    @Suppress("RedundantVisibilityModifier")
-    @JvmField
-    @Rule
-    public var expectedException: ExpectedException = ExpectedException.none()
-
-    @Before
+    @BeforeEach
     fun setUp() {
 
         val dataSource = JdbcDataSource().apply {
@@ -33,7 +25,7 @@ class ConnectorsTest {
         connector = Connectors.newInstance(dataSource)
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         // コネクションごとにデータベースを閉じない設定にしているため、手動でクローズしてDBをリセットする
         connector?.exec("shutdown")
@@ -93,7 +85,7 @@ class ConnectorsTest {
         }
 
         @Suppress("UNREACHABLE_CODE")
-        fail()
+        fail("")
     }
 
     @Test
@@ -227,7 +219,7 @@ class ConnectorsTest {
     /**
      * H2 doesn't support `largeUpdate()`.
      */
-    @Ignore
+    @Disabled
     @Test
     fun genericTest13() {
         connector!!.exec("create table user(id int, name varchar)")
@@ -280,11 +272,12 @@ class ConnectorsTest {
     @Test
     fun genericTest17() {
 
-        expectedException.expect(isA(AsashimoNoResultException::class.java))
+        assertThrows<AsashimoNoResultException> {
 
-        connector!!.use {
-            exec("create table user(id int, name varchar)")
-            fetch("select * from user", User::class)
+            connector!!.use {
+                exec("create table user(id int, name varchar)")
+                fetch("select * from user", User::class)
+            }
         }
     }
 
@@ -380,12 +373,13 @@ class ConnectorsTest {
     @Test
     fun genericTest24() {
 
-        expectedException.expect(isA(AsashimoNonUniqueResultException::class.java))
+        assertThrows<AsashimoNonUniqueResultException> {
 
-        connector!!.use {
-            exec("create table user(id int, name varchar)")
-            exec("insert into user values(1, 'John'), (2, 'Jack')")
-            fetch("select * from user", User::class)
+            connector!!.use {
+                exec("create table user(id int, name varchar)")
+                exec("insert into user values(1, 'John'), (2, 'Jack')")
+                fetch("select * from user", User::class)
+            }
         }
     }
 

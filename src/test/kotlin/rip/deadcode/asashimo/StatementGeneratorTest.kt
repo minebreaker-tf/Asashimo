@@ -2,8 +2,9 @@ package rip.deadcode.asashimo
 
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.ListeningExecutorService
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.*
 import rip.deadcode.asashimo.manipulation.BasicRetriever
@@ -17,7 +18,7 @@ class StatementGeneratorTest {
 
     var mockRegistry: AsashimoRegistry? = null
 
-    @Before
+    @BeforeEach
     fun setUp() {
         mockRegistry = AsashimoRegistry(
                 { mock(DataSource::class.java) },
@@ -97,11 +98,13 @@ from
         verifyNoMoreInteractions(conn, stmt)
     }
 
-    @Test(expected = IllegalStateException::class)
+    @Test
     fun test2() {
-        val conn = mock(Connection::class.java)
-        StatementGenerator.create(
-                conn, mockRegistry!!, "select * from user where id = ?", params = mapOf("id" to 123))
+        assertThrows<IllegalStateException> {
+            val conn = mock(Connection::class.java)
+            StatementGenerator.create(
+                    conn, mockRegistry!!, "select * from user where id = ?", params = mapOf("id" to 123))
+        }
     }
 
     @Test

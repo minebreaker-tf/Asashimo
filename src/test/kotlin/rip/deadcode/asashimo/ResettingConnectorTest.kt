@@ -1,8 +1,8 @@
 package rip.deadcode.asashimo
 
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert.fail
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
@@ -33,7 +33,7 @@ class ResettingConnectorTest {
                 throw RuntimeException()
             }
             @Suppress("UNREACHABLE_CODE")
-            fail()
+            fail("")
         } catch (e: AsashimoException) {
         }
 
@@ -48,7 +48,7 @@ class ResettingConnectorTest {
                 throw RuntimeException()
             }
             @Suppress("UNREACHABLE_CODE")
-            fail()
+            fail("")
         } catch (e: AsashimoException) {
         }
 
@@ -78,7 +78,7 @@ class ResettingConnectorTest {
                 throw RuntimeException()
             }
             @Suppress("UNREACHABLE_CODE")
-            fail()
+            fail("")
         } catch (e: AsashimoException) {
         }
 
