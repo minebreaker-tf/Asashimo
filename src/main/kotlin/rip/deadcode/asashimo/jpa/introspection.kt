@@ -1,6 +1,7 @@
 package rip.deadcode.asashimo.jpa
 
 import com.google.common.collect.ImmutableList
+import java.lang.reflect.Modifier
 import javax.persistence.Column
 import javax.persistence.Id
 import javax.persistence.Table
@@ -32,6 +33,7 @@ object JpaIntrospector {
         val columns = mutableListOf<Any>()
 
         for (f in fields) {
+            if (f.isSynthetic || Modifier.isTransient(f.modifiers)) continue
             f.isAccessible = true
 
             val columnMark = f.getAnnotation(Column::class.java)
@@ -58,6 +60,7 @@ object JpaIntrospector {
         val columns = mutableListOf<Any>()
 
         for (f in fields) {
+            if (f.isSynthetic || Modifier.isTransient(f.modifiers)) continue
             f.isAccessible = true
 
             val idMark = f.getAnnotation(Id::class.java)
@@ -91,6 +94,7 @@ object JpaIntrospector {
         val columnNames = mutableListOf<String>()
 
         for (f in fields) {
+            if (f.isSynthetic || Modifier.isTransient(f.modifiers)) continue
             f.isAccessible = true
 
             val idMark = f.getAnnotation(Id::class.java)
