@@ -83,7 +83,7 @@ internal object StatementGenerator {
             if (!found) resultTokens += token
         }
 
-        val sqlToExec = resultTokens.joinToString(separator = " ")
+        val sqlToExec = joinTokens(resultTokens)
         return ConversionResult(sqlToExec, paramsToSet)
     }
 
@@ -108,7 +108,7 @@ internal object StatementGenerator {
             if (!found) resultTokens += token
         }
 
-        val sqlToExec = resultTokens.joinToString(separator = " ")
+        val sqlToExec = joinTokens(resultTokens)
         return NamingResult(sqlToExec, paramNames)
     }
 
@@ -186,5 +186,25 @@ internal object StatementGenerator {
     }
 
     // TODO lex comments
+
+    private fun joinTokens(tokens: List<String>): String {
+
+        val builder = StringBuilder()
+
+        for ((i, token) in tokens.withIndex()) {
+
+            builder.append(token)
+
+            if (i != tokens.lastIndex
+                    && token != "("
+                    && tokens[i + 1] != ")"
+                    && tokens[i + 1] != ","
+                    && tokens[i + 1] != ";") {
+                builder.append(" ")
+            }
+        }
+
+        return builder.toString()
+    }
 
 }

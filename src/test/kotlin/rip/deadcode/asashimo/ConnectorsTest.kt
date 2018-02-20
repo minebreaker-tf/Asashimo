@@ -519,4 +519,31 @@ class ConnectorsTest {
         assertThat(users).containsExactly(User(1, "John"), User(2, "Jack"))
     }
 
+    @Test
+    fun genericTest34() {
+
+        data class Result(
+                val count: Int,
+                val minimum: Int,
+                val maximum: Int,
+                val average: Int
+        )
+
+        val result = connector!!.transactional {
+            exec("create table data(id int, point int)")
+            exec("insert into data values(1, 70)")
+            exec("insert into data values(2, 80)")
+            exec("insert into data values(3, 90)")
+            fetch("""
+                select
+                    count(*) as count,
+                    min(point) as minimum,
+                    max(point) as maximum,
+                    avg(point) as average
+                from data""", Result::class)
+        }
+
+        assertThat(result).isEqualTo(Result(3, 70, 90, 80))
+    }
+
 }

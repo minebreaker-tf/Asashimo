@@ -92,7 +92,7 @@ from
 
         assertThat(result === stmt).isTrue()
 
-        verify(conn).prepareStatement("select id , name from user where id = ? and password = ?")
+        verify(conn).prepareStatement("select id, name from user where id = ? and password = ?")
         verify(stmt).setInt(1, 123)
         verify(stmt).setString(2, "Robert'); DROP TABLE Students;--")
         verifyNoMoreInteractions(conn, stmt)
@@ -121,10 +121,46 @@ from
 
         assertThat(result === stmt).isTrue()
 
-        verify(conn).prepareStatement("select id , name from user where id in ( ? , ? , ? )")
+        verify(conn).prepareStatement("select id, name from user where id in (?, ?, ?)")
         verify(stmt).setInt(1, 123)
         verify(stmt).setInt(2, 456)
         verify(stmt).setInt(3, 789)
+        verifyNoMoreInteractions(conn, stmt)
+    }
+
+    @Test
+    fun test4() {
+        val conn = mock(Connection::class.java)
+        val stmt = mock(PreparedStatement::class.java)
+        `when`(conn.prepareStatement(any())).thenReturn(stmt)
+
+        val result = StatementGenerator.create(
+                conn,
+                mockRegistry!!,
+                "select max(a), min(b), avg(c) from table group by d",
+                mapOf())
+
+        assertThat(result === stmt).isTrue()
+
+        verify(conn).prepareStatement("select max(a), min(b), avg(c) from table group by d")
+        verifyNoMoreInteractions(conn, stmt)
+    }
+
+    @Test
+    fun test5() {
+        val conn = mock(Connection::class.java)
+        val stmt = mock(PreparedStatement::class.java)
+        `when`(conn.prepareStatement(any())).thenReturn(stmt)
+
+        val result = StatementGenerator.create(
+                conn,
+                mockRegistry!!,
+                "select * from table where id in (select id from another_table);",
+                mapOf())
+
+        assertThat(result === stmt).isTrue()
+
+        verify(conn).prepareStatement("select * from table where id in (select id from another_table);")
         verifyNoMoreInteractions(conn, stmt)
     }
 
