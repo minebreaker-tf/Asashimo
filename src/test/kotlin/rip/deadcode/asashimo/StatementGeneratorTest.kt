@@ -121,7 +121,7 @@ from
 
         assertThat(result === stmt).isTrue()
 
-        verify(conn).prepareStatement("select id, name from user where id in (?, ?, ?)")
+        verify(conn).prepareStatement("select id, name from user where id in(?, ?, ?)")
         verify(stmt).setInt(1, 123)
         verify(stmt).setInt(2, 456)
         verify(stmt).setInt(3, 789)
@@ -137,12 +137,13 @@ from
         val result = StatementGenerator.create(
                 conn,
                 mockRegistry!!,
-                "select max(a), min(b), avg(c) from table group by d",
-                mapOf())
+                "select max(a), min(b), avg(c) from table where point = :point group by d",
+                mapOf("point" to 123))
 
         assertThat(result === stmt).isTrue()
 
-        verify(conn).prepareStatement("select max(a), min(b), avg(c) from table group by d")
+        verify(conn).prepareStatement("select max(a), min(b), avg(c) from table where point = ? group by d")
+        verify(stmt).setInt(1, 123)
         verifyNoMoreInteractions(conn, stmt)
     }
 
@@ -155,12 +156,13 @@ from
         val result = StatementGenerator.create(
                 conn,
                 mockRegistry!!,
-                "select * from table where id in (select id from another_table);",
-                mapOf())
+                "select * from table where id in (select id from another_table where cond = :cond) order by id;",
+                mapOf("cond" to "cond"))
 
         assertThat(result === stmt).isTrue()
 
-        verify(conn).prepareStatement("select * from table where id in (select id from another_table);")
+        verify(conn).prepareStatement("select * from table where id in(select id from another_table where cond = ?) order by id;")
+        verify(stmt).setString(1, "cond")
         verifyNoMoreInteractions(conn, stmt)
     }
 

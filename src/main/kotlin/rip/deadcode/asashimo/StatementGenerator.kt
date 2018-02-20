@@ -197,6 +197,7 @@ internal object StatementGenerator {
 
             if (i != tokens.lastIndex
                     && token != "("
+                    && tokens[i + 1] != "("
                     && tokens[i + 1] != ")"
                     && tokens[i + 1] != ","
                     && tokens[i + 1] != ";") {
