@@ -4,7 +4,8 @@ Thin JDBC wrapper for Kotlin
 
 [日本語](README.jp.md)
 
-[![CircleCI](https://circleci.com/bb/minebreaker_tf/asashimo.svg?style=svg&circle-token=c3b0779aa16a3bcdb21e4e72ab8575f916ca2b5a)](https://circleci.com/bb/minebreaker_tf/asashimo)
+[![CircleCI](https://circleci.com/gh/minebreaker-tf/Asashimo.svg?style=svg)](https://circleci.com/gh/minebreaker-tf/Asashimo)
+[![codecov](https://codecov.io/gh/minebreaker-tf/Asashimo/branch/master/graph/badge.svg)](https://codecov.io/gh/minebreaker-tf/Asashimo)
 ![](https://img.shields.io/badge/maturity-experimental-green.svg)
 ![](https://img.shields.io/badge/license-MIT-green.svg)
 
