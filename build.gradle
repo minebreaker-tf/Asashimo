@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.2.21'
+    ext.kotlin_version = '1.2.30'
 
     repositories {
         mavenCentral()
@@ -34,7 +34,7 @@ dependencies {
             'javax.persistence:javax.persistence-api:2.2',
 
             'com.google.guava:guava:24.0-jre',
-            'com.google.code.findbugs:jsr305:3.0.2',
+//            'com.google.code.findbugs:jsr305:3.0.2',
             'org.slf4j:slf4j-api:1.7.25',
     )
     testCompile(
