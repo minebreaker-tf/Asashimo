@@ -6,6 +6,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource
 import org.h2.jdbcx.JdbcDataSource
 import org.junit.jupiter.api.*
 import org.mariadb.jdbc.MariaDbDataSource
+import org.postgresql.ds.PGSimpleDataSource
 import rip.deadcode.asashimo.resultmapper.MapResultMapper
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -35,6 +36,7 @@ class ConnectorsTest {
         val dataSource = when (database) {
             "mysql" -> provideMysql()
             "mariadb" -> provideMariaDb()
+            "postgresql" -> providePg()
             else -> provideH2()
         }
         connector = Connectors.newInstance(dataSource)
@@ -42,7 +44,7 @@ class ConnectorsTest {
 
     @AfterEach
     fun tearDown() {
-        connector!!.exec("drop table if exists user")
+        connector!!.exec("drop table if exists user_info")
         connector!!.exec("drop table if exists data")
     }
 
@@ -70,22 +72,30 @@ class ConnectorsTest {
         }
     }
 
+    private fun providePg(): DataSource {
+        return PGSimpleDataSource().apply {
+            setUrl(System.getenv("database.url"))
+            user = System.getenv("database.user")
+            password = System.getenv("database.password")
+        }
+    }
+
     private data class User(val id: Int, val name: String)
 
     private val userMapper = { rs: ResultSet -> User(rs.getInt("id"), rs.getString("name")) }
 
     @Test
     fun hello() {
-        val message = connector!!.fetch("select 'hello, world' from dual", String::class)
+        val message = connector!!.fetch("select 'hello, world'", String::class)
         assertThat(message).isEqualTo("hello, world")
     }
 
     @Test
     fun genericTest1() {
-        connector!!.exec("create table user(id int, name varchar(127))")
-        connector!!.exec("insert into user values(1, 'John')")
+        connector!!.exec("create table user_info(id int, name varchar(127))")
+        connector!!.exec("insert into user_info values(1, 'John')")
         val user = connector!!.fetch(
-                "select * from user", User::class, userMapper)
+                "select * from user_info", User::class, userMapper)
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -94,9 +104,9 @@ class ConnectorsTest {
     @Test
     fun genericTest2() {
         val user = connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
-            fetch("select * from user", User::class, userMapper)
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
+            fetch("select * from user_info", User::class, userMapper)
         }
 
         assertThat(user.id).isEqualTo(1)
@@ -106,10 +116,10 @@ class ConnectorsTest {
     @Test
     fun genericTest3() {
         try {
+            connector!!.exec("create table user_info(id int, name varchar(127))")
             connector!!.transactional {
-                exec("create table user(id int, name varchar(127))")
-                exec("insert into user values(1, 'John')")
-                val user = fetch("select * from user", User::class, userMapper)
+                exec("insert into user_info values(1, 'John')")
+                val user = fetch("select * from user_info", User::class, userMapper)
 
                 assertThat(user.id).isEqualTo(1)
                 assertThat(user.name).isEqualTo("John")
@@ -118,7 +128,7 @@ class ConnectorsTest {
             }
         } catch (e: AsashimoException) {
 
-            val count = connector!!.fetch("select count(*) from user", Int::class)
+            val count = connector!!.fetch("select count(*) from user_info", Int::class)
             assertThat(count).isEqualTo(0)
             return
         }
@@ -130,9 +140,9 @@ class ConnectorsTest {
     @Test
     fun genericTest4() {
         val user = connector!!.transactional {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
-            fetch("select * from user", User::class, userMapper)
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
+            fetch("select * from user_info", User::class, userMapper)
         }
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -140,17 +150,17 @@ class ConnectorsTest {
         connector!!.exec("rollback")
 
         // Assure "rollback" had no effect
-        val user2 = connector!!.fetch("select * from user", User::class, userMapper)
+        val user2 = connector!!.fetch("select * from user_info", User::class, userMapper)
         assertThat(user2.id).isEqualTo(1)
         assertThat(user2.name).isEqualTo("John")
     }
 
     @Test
     fun genericTest5() {
-        connector!!.exec("create table user(id int, name varchar(127))")
-        connector!!.exec("insert into user values(1, 'John')")
+        connector!!.exec("create table user_info(id int, name varchar(127))")
+        connector!!.exec("insert into user_info values(1, 'John')")
         val user = connector!!.fetch(
-                "select * from user", User::class)
+                "select * from user_info", User::class)
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -169,11 +179,11 @@ class ConnectorsTest {
         val result = connector!!.with {
             it["id"] = 4
         }.transactional {
-                    exec("create table data(id int, point int)")
-                    exec("insert into data values(1, 70)")
-                    exec("insert into data values(2, 80)")
-                    exec("insert into data values(3, 90)")
-                    fetch("""
+            exec("create table data(id int, point int)")
+            exec("insert into data values(1, 70)")
+            exec("insert into data values(2, 80)")
+            exec("insert into data values(3, 90)")
+            fetch("""
                         select
                             count(*) as count,
                             min(point) as minimum,
@@ -181,7 +191,7 @@ class ConnectorsTest {
                             avg(point) as average
                         from data
                         where id < :id""", Result::class)
-                }
+        }
 
         assertThat(result).isEqualTo(Result(3, 70, 90, 80))
     }
@@ -189,9 +199,9 @@ class ConnectorsTest {
     @Test
     fun genericTest6() {
         val user = connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
-            fetch("select * from user", User::class)
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
+            fetch("select * from user_info", User::class)
         }
 
         assertThat(user.id).isEqualTo(1)
@@ -200,11 +210,11 @@ class ConnectorsTest {
 
     @Test
     fun genericTest7() {
-        connector!!.exec("create table user(id int, name varchar(127))")
-        connector!!.exec("insert into user values(1, 'John')")
+        connector!!.exec("create table user_info(id int, name varchar(127))")
+        connector!!.exec("insert into user_info values(1, 'John')")
         val user = connector!!
                 .with(mapOf("id" to 1))
-                .fetch("select * from user where id = :id", User::class)
+                .fetch("select * from user_info where id = :id", User::class)
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -212,11 +222,11 @@ class ConnectorsTest {
 
     @Test
     fun genericTest8() {
-        connector!!.exec("create table user(id int, name varchar(127))")
-        connector!!.exec("insert into user values(1, 'John')")
+        connector!!.exec("create table user_info(id int, name varchar(127))")
+        connector!!.exec("insert into user_info values(1, 'John')")
         val user = connector!!.with {
             it["id"] = 1
-        }.fetch("select * from user where id = :id", User::class)
+        }.fetch("select * from user_info where id = :id", User::class)
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -227,9 +237,9 @@ class ConnectorsTest {
         val user = connector!!
                 .with(mapOf("id" to 1, "name" to "John"))
                 .use {
-                    exec("create table user(id int, name varchar(127))")
-                    exec("insert into user values(:id, 'John')")
-                    fetch("select * from user where name = :name", User::class)
+                    exec("create table user_info(id int, name varchar(127))")
+                    exec("insert into user_info values(:id, 'John')")
+                    fetch("select * from user_info where name = :name", User::class)
                 }
 
         assertThat(user.id).isEqualTo(1)
@@ -242,10 +252,10 @@ class ConnectorsTest {
             it["id"] = 1
             it["name"] = "John"
         }.use {
-                    exec("create table user(id int, name varchar(127))")
-                    exec("insert into user values(:id, 'John')")
-                    fetch("select * from user where name = :name", User::class)
-                }
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(:id, 'John')")
+            fetch("select * from user_info where name = :name", User::class)
+        }
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -257,10 +267,10 @@ class ConnectorsTest {
             it["id"] = 1
             it["name"] = "John"
         }.transactional {
-                    exec("create table user(id int, name varchar(127))")
-                    exec("insert into user values(:id, 'John')")
-                    fetch("select * from user where name = :name", User::class)
-                }
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(:id, 'John')")
+            fetch("select * from user_info where name = :name", User::class)
+        }
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -271,12 +281,12 @@ class ConnectorsTest {
         val user = connector!!.with {
             it["ids"] = listOf(2, 3)
         }.use {
-                    exec("create table user(id int, name varchar(127))")
-                    exec("insert into user values(1, 'John')")
-                    exec("insert into user values(2, 'Jack')")
-                    exec("insert into user values(3, 'Jane')")
-                    fetchAll("select * from user where id in (:ids)", User::class)
-                }
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
+            exec("insert into user_info values(2, 'Jack')")
+            exec("insert into user_info values(3, 'Jane')")
+            fetchAll("select * from user_info where id in (:ids)", User::class)
+        }
 
         assertThat(user).hasSize(2)
         assertThat(user[0].id).isEqualTo(2)
@@ -288,8 +298,8 @@ class ConnectorsTest {
     @Disabled("H2 doesn't support `largeUpdate()`")
     @Test
     fun genericTest13() {
-        connector!!.exec("create table user(id int, name varchar(127))")
-        val n: Long = connector!!.execLarge("insert into user values(1, 'John')")
+        connector!!.exec("create table user_info(id int, name varchar(127))")
+        val n: Long = connector!!.execLarge("insert into user_info values(1, 'John')")
 
         assertThat(n).isEqualTo(1)
     }
@@ -297,10 +307,10 @@ class ConnectorsTest {
     @Test
     fun genericTest14() {
         connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
         }
-        val user = connector!!.fetchLazy("select * from user", User::class).get()
+        val user = connector!!.fetchLazy("select * from user_info", User::class).get()
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -309,11 +319,11 @@ class ConnectorsTest {
     @Test
     fun genericTest15() {
         connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
         }
 
-        val userFuture = connector!!.fetchAsync("select * from user", User::class)
+        val userFuture = connector!!.fetchAsync("select * from user_info", User::class)
         val user = userFuture.get()
 
         assertThat(user.id).isEqualTo(1)
@@ -325,9 +335,9 @@ class ConnectorsTest {
         val userFuture = connector!!
                 .with(mapOf("id" to 1))
                 .useAsync(MoreExecutors.newDirectExecutorService()) {
-                    exec("create table user(id int, name varchar(127))")
-                    exec("insert into user values(1, 'John')")
-                    fetch("select * from user where id = :id", User::class)
+                    exec("create table user_info(id int, name varchar(127))")
+                    exec("insert into user_info values(1, 'John')")
+                    fetch("select * from user_info where id = :id", User::class)
                 }
         val user = userFuture.get()
 
@@ -341,8 +351,8 @@ class ConnectorsTest {
         assertThrows<AsashimoNoResultException> {
 
             connector!!.use {
-                exec("create table user(id int, name varchar(127))")
-                fetch("select * from user", User::class)
+                exec("create table user_info(id int, name varchar(127))")
+                fetch("select * from user_info", User::class)
             }
         }
     }
@@ -350,8 +360,8 @@ class ConnectorsTest {
     @Test
     fun genericTest18() {
         val users = connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            fetchAll("select * from user", User::class)
+            exec("create table user_info(id int, name varchar(127))")
+            fetchAll("select * from user_info", User::class)
         }
 
         assertThat(users).isEmpty()
@@ -360,26 +370,26 @@ class ConnectorsTest {
     @Test
     fun genericTest19() {
         val user = connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            fetchMaybe("select * from user", User::class)
+            exec("create table user_info(id int, name varchar(127))")
+            fetchMaybe("select * from user_info", User::class)
         }
         assertThat(user).isNull()
     }
 
     @Test
     fun genericTest20() {
-        connector!!.exec("create table user(id int, name varchar(127))")
-        val user = connector!!.fetchMaybe("select * from user", User::class)
+        connector!!.exec("create table user_info(id int, name varchar(127))")
+        val user = connector!!.fetchMaybe("select * from user_info", User::class)
         assertThat(user).isNull()
     }
 
     @Test
     fun genericTest33() {
         connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
         }
-        val user = connector!!.fetchMaybe("select * from user", User::class)
+        val user = connector!!.fetchMaybe("select * from user_info", User::class)
         assertThat(user).isEqualTo(User(1, "John"))
     }
 
@@ -392,9 +402,9 @@ class ConnectorsTest {
         }
         connector = Connectors.newInstance(dataSource = dataSource, defaultResultMapper = MapResultMapper)
         val result = connector!!.use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
-            fetch("select * from user", Map::class)
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
+            fetch("select * from user_info", Map::class)
         }
 
         assertThat(result).containsExactly("id", "1", "name", "John")
@@ -406,12 +416,12 @@ class ConnectorsTest {
             it["id"] = 999
             it["name"] = "XXX"
         }.use {
-                    exec("create table user(id int, name varchar(127))")
-                    bind("id" to 1)
-                    bind("name" to "John")
-                    exec("insert into user values(:id, :name)")
-                    fetch("select * from user", User::class, userMapper)
-                }
+            exec("create table user_info(id int, name varchar(127))")
+            bind("id" to 1)
+            bind("name" to "John")
+            exec("insert into user_info values(:id, :name)")
+            fetch("select * from user_info", User::class, userMapper)
+        }
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -423,14 +433,14 @@ class ConnectorsTest {
             it["id"] = 999
             it["name"] = "XXX"
         }.use {
-                    exec("create table user(id int, name varchar(127))")
-                    bind {
-                        it["id"] = 1
-                        it["name"] = "John"
-                    }
-                    exec("insert into user values(:id, :name)")
-                    fetch("select * from user", User::class, userMapper)
-                }
+            exec("create table user_info(id int, name varchar(127))")
+            bind {
+                it["id"] = 1
+                it["name"] = "John"
+            }
+            exec("insert into user_info values(:id, :name)")
+            fetch("select * from user_info", User::class, userMapper)
+        }
 
         assertThat(user.id).isEqualTo(1)
         assertThat(user.name).isEqualTo("John")
@@ -442,14 +452,14 @@ class ConnectorsTest {
         assertThrows<AsashimoNonUniqueResultException> {
 
             connector!!.use {
-                exec("create table user(id int, name varchar(127))")
-                exec("insert into user values(1, 'John'), (2, 'Jack')")
-                fetch("select * from user", User::class)
+                exec("create table user_info(id int, name varchar(127))")
+                exec("insert into user_info values(1, 'John'), (2, 'Jack')")
+                fetch("select * from user_info", User::class)
             }
         }
     }
 
-    @Table(name = "user")
+    @Table(name = "user_info")
     data class JpaUser(
             @Id
             @Column(name = "user_id")
@@ -460,12 +470,12 @@ class ConnectorsTest {
     @Test
     fun genericTest25() {
 
-        connector!!.exec("create table user(user_id int, name varchar(127))")
+        connector!!.exec("create table user_info(user_id int, name varchar(127))")
 
         val user = JpaUser(123, "John")
         connector!!.persist(user)
 
-        val result = connector!!.fetch("select * from user", JpaUser::class)
+        val result = connector!!.fetch("select * from user_info", JpaUser::class)
 
         assertThat(result.id).isEqualTo(123)
         assertThat(result.name).isEqualTo("John")
@@ -475,8 +485,8 @@ class ConnectorsTest {
     fun genericTest26() {
 
         connector!!.use {
-            exec("create table user(user_id int, name varchar(127))")
-            exec("insert into user values(123, 'John')")
+            exec("create table user_info(user_id int, name varchar(127))")
+            exec("insert into user_info values(123, 'John')")
         }
 
         val result = connector!!.find(123, JpaUser::class)
@@ -490,9 +500,9 @@ class ConnectorsTest {
 
         val entity = User(123, "John")
         val result = connector!!.with(entity).use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(123, 'John')")
-            fetch("select id, name from user where id = :id and name = :name", User::class)
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(123, 'John')")
+            fetch("select id, name from user_info where id = :id and name = :name", User::class)
         }
 
         assertThat(result.id).isEqualTo(123)
@@ -504,9 +514,9 @@ class ConnectorsTest {
 
         val entity = JpaUser(123, "John")
         val result = connector!!.with(entity).use {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(123, 'John')")
-            fetch("select id, name from user where id = :user_id and name = :name", User::class)
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(123, 'John')")
+            fetch("select id, name from user_info where id = :user_id and name = :name", User::class)
         }
 
         assertThat(result.id).isEqualTo(123)
@@ -517,13 +527,13 @@ class ConnectorsTest {
     fun genericTest29() {
 
         val users = connector!!.transactional {
-            exec("create table user(id int, name varchar(127))")
-            exec("insert into user values(1, 'John')")
+            exec("create table user_info(id int, name varchar(127))")
+            exec("insert into user_info values(1, 'John')")
             savepoint {
-                exec("insert into user values(2, 'Jack')")
+                exec("insert into user_info values(2, 'Jack')")
                 throw RuntimeException()
             }
-            fetchAll("select * from user", User::class)
+            fetchAll("select * from user_info", User::class)
         }
 
         assertThat(users).hasSize(1)
@@ -535,16 +545,16 @@ class ConnectorsTest {
     fun genericTest30() {
 
         val users = connector!!.transactional {
-            exec("create table user(id int, name varchar(127))")
+            exec("create table user_info(id int, name varchar(127))")
             savepoint("a") {
-                exec("insert into user values(1, 'John')")
+                exec("insert into user_info values(1, 'John')")
                 savepoint("b") {
-                    exec("insert into user values(2, 'Jack')")
+                    exec("insert into user_info values(2, 'Jack')")
                     throw RuntimeException()
                 }
-                exec("insert into user values(3, 'Jane')")
+                exec("insert into user_info values(3, 'Jane')")
             }
-            fetchAll("select * from user", User::class)
+            fetchAll("select * from user_info", User::class)
         }
 
         assertThat(users).containsExactly(User(1, "John"), User(3, "Jane"))
@@ -553,26 +563,26 @@ class ConnectorsTest {
     @Test
     fun genericTest31() {
 
-        connector!!.exec("create table user(id int, name varchar(127))")
+        connector!!.exec("create table user_info(id int, name varchar(127))")
 
         val count = connector!!.batch {
-            add("insert into user values(1, 'John')")
-            add("insert into user values(2, 'Jack')")
+            add("insert into user_info values(1, 'John')")
+            add("insert into user_info values(2, 'Jack')")
         }
 
         assertThat(count[0]).isEqualTo(1)
         assertThat(count[1]).isEqualTo(1)
 
-        val tableCount = connector!!.fetch("select count(*) from user", Int::class)
+        val tableCount = connector!!.fetch("select count(*) from user_info", Int::class)
         assertThat(tableCount).isEqualTo(2)
     }
 
     @Test
     fun genericTest32() {
 
-        connector!!.exec("create table user(id int, name varchar(127))")
+        connector!!.exec("create table user_info(id int, name varchar(127))")
 
-        val count = connector!!.batch("insert into user values(:id, :name)")
+        val count = connector!!.batch("insert into user_info values(:id, :name)")
                 .with(mapOf("id" to listOf(1, 2)))
                 .with(mapOf("name" to listOf("John", "Jack")))
                 .exec()
@@ -586,7 +596,7 @@ class ConnectorsTest {
             assertThat(count[1]).isEqualTo(1)
         }
 
-        val users = connector!!.fetchAll("select * from user", User::class)
+        val users = connector!!.fetchAll("select * from user_info", User::class)
         assertThat(users).hasSize(2)
         assertThat(users).containsExactly(User(1, "John"), User(2, "Jack"))
     }

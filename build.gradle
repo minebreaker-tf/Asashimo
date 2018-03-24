@@ -45,6 +45,7 @@ dependencies {
             'com.h2database:h2:1.4.196',
             'mysql:mysql-connector-java:5.1.46',
             'org.mariadb.jdbc:mariadb-java-client:2.2.3',
+            'org.postgresql:postgresql:42.2.2'
     )
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
 }
