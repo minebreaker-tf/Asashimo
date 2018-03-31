@@ -10,6 +10,8 @@ import org.postgresql.ds.PGSimpleDataSource
 import rip.deadcode.asashimo.resultmapper.MapResultMapper
 import java.sql.PreparedStatement
 import java.sql.ResultSet
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import javax.persistence.Column
 import javax.persistence.Id
 import javax.persistence.Table
@@ -21,6 +23,11 @@ class ConnectorsTest {
     private var connector: Connector? = null
 
     companion object {
+
+        private const val MY_SQL = "mysql"
+        private const val MARIA_DB = "mariadb"
+        private const val POSTGRESQL = "postgresql"
+
         @JvmStatic
         @BeforeAll
         fun env() {
@@ -34,9 +41,9 @@ class ConnectorsTest {
     fun setUp() {
         database = System.getenv("database")
         val dataSource = when (database) {
-            "mysql" -> provideMysql()
-            "mariadb" -> provideMariaDb()
-            "postgresql" -> providePg()
+            MY_SQL -> provideMysql()
+            MARIA_DB -> provideMariaDb()
+            POSTGRESQL -> providePg()
             else -> provideH2()
         }
         connector = Connectors.newInstance(dataSource)
@@ -587,7 +594,7 @@ class ConnectorsTest {
                 .with(mapOf("name" to listOf("John", "Jack")))
                 .exec()
 
-        if (database == "mariadb") {
+        if (database == MARIA_DB) {
             // MariaDB uses `-2`
             assertThat(count[0]).isEqualTo(PreparedStatement.SUCCESS_NO_INFO)
             assertThat(count[1]).isEqualTo(PreparedStatement.SUCCESS_NO_INFO)
@@ -601,4 +608,14 @@ class ConnectorsTest {
         assertThat(users).containsExactly(User(1, "John"), User(2, "Jack"))
     }
 
+    @Test
+    fun genericTest35() {
+        if (database == POSTGRESQL) {
+            val result = connector!!.fetch("select now()", OffsetDateTime::class)
+            assertThat(result).isInstanceOf(OffsetDateTime::class.java)
+        } else {
+            val result = connector!!.fetch("select now()", LocalDateTime::class)
+            assertThat(result).isInstanceOf(LocalDateTime::class.java)
+        }
+    }
 }

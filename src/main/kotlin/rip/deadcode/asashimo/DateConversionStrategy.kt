@@ -13,8 +13,8 @@ enum class DateConversionStrategy {
      * Get/set values as is, using [java.sql.ResultSet.getObject] or [java.sql.PreparedStatement.setObject].
      */
     RAW {
-        override fun getSetter(config: AsashimoConfig): Setter? = null
-        override fun getRetriever(config: AsashimoConfig): Retriever? = null
+        override fun getSetter(config: AsashimoConfig): Setter = AnySetter
+        override fun getRetriever(config: AsashimoConfig): Retriever = RawRetriever
     },
 
     /**
@@ -24,8 +24,8 @@ enum class DateConversionStrategy {
      */
     @Experimental
     CONVERT_TO_CLASSIC {
-        override fun getRetriever(config: AsashimoConfig): Retriever? = ConvertToClassicRetriever(config.databaseZoneOffset)
-        override fun getSetter(config: AsashimoConfig): Setter? = ConvertToClassicSetter(config.databaseZoneOffset)
+        override fun getRetriever(config: AsashimoConfig): Retriever = ConvertToClassicRetriever(config.databaseZoneOffset)
+        override fun getSetter(config: AsashimoConfig): Setter = ConvertToClassicSetter(config.databaseZoneOffset)
     },
 
     /**
@@ -37,10 +37,10 @@ enum class DateConversionStrategy {
      */
     @Experimental
     CONVERT_NONLOCAL_TO_LOCAL {
-        override fun getRetriever(config: AsashimoConfig): Retriever? = ConvertNonLocalToLocalRetriever(config.databaseZoneOffset)
-        override fun getSetter(config: AsashimoConfig): Setter? = ConvertNonLocalToLocalSetter(config.databaseZoneOffset)
+        override fun getRetriever(config: AsashimoConfig): Retriever = ConvertNonLocalToLocalRetriever(config.databaseZoneOffset)
+        override fun getSetter(config: AsashimoConfig): Setter = ConvertNonLocalToLocalSetter(config.databaseZoneOffset)
     };
 
-    abstract fun getRetriever(config: AsashimoConfig): Retriever?
-    abstract fun getSetter(config: AsashimoConfig): Setter?
+    abstract fun getRetriever(config: AsashimoConfig): Retriever
+    abstract fun getSetter(config: AsashimoConfig): Setter
 }

@@ -29,24 +29,6 @@ class DefaultResultMapperTest {
                 BasicSetter)
     }
 
-    @Test
-    fun testBasicType1() {
-        val rs = mock(ResultSet::class.java)
-        `when`(rs.getInt(1)).thenReturn(123)
-        val res = convertToBasicType(Int::class, rs)
-
-        assertThat(res).isEqualTo(123)
-    }
-
-    @Test
-    fun testBasicType2() {
-        val rs = mock(ResultSet::class.java)
-        `when`(rs.getBytes(1)).thenReturn(byteArrayOf(62, 63, 64))
-        val res = convertToBasicType(ByteArray::class, rs)
-
-        assertThat(res).isEqualTo(byteArrayOf(62, 63, 64))
-    }
-
     private data class User1(val id: Int, val name: String)
 
     @Test

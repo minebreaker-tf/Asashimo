@@ -7,6 +7,27 @@ import java.sql.Timestamp
 import java.time.*
 import kotlin.reflect.KClass
 
+object RawRetriever : Retriever {
+
+    private val retrievableClass = setOf(
+            ZonedDateTime::class,
+            OffsetDateTime::class,
+            OffsetTime::class,
+            LocalDateTime::class,
+            LocalTime::class,
+            LocalTime::class,
+            Instant::class
+    )
+
+    override fun <T : Any> retrievable(cls: KClass<T>): Boolean {
+        return retrievableClass.contains(cls)
+    }
+
+    override fun <T : Any> retrieveByClass(rs: ResultSet, cls: KClass<T>, index: Int): T? {
+        return rs.getObject(index, cls.java)
+    }
+}
+
 class ConvertToClassicRetriever(
         val databaseOffset: ZoneOffset
 ) : Retriever {

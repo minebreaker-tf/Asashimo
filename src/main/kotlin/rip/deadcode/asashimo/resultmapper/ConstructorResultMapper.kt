@@ -13,7 +13,8 @@ object ConstructorResultMapper : GeneralResultMapper {
     private val logger = LoggerFactory.getLogger(ConstructorResultMapper::class.java)
 
     override fun <T : Any> map(registry: AsashimoRegistry, cls: KClass<T>, resultSet: ResultSet): T {
-        return convertToBasicType(cls, resultSet)
+        // TODO basic typeを、registryのを使うよう修正
+        return convertUsingRegistry(registry, cls, resultSet)
                 ?: convertWithAllArgsConstructor(cls, resultSet, registry)
                 ?: throw AsashimoException("Failed to map ResultSet to class '${cls.java.canonicalName}'")
     }
