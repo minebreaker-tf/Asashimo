@@ -266,6 +266,7 @@ TODO: Find better pattern
 * Documentation
 * More tests
 * Java 9 Module
+* Testability (mock `Connector`)
 
 
 ## License

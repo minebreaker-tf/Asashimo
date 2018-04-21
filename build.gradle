@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.2.31'
+    ext.kotlin_version = '1.2.40'
 
     repositories {
         mavenCentral()
@@ -18,8 +18,8 @@ apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-group 'rip.deadcode'
-version '0.2.8'
+group = 'rip.deadcode'
+version = '0.2.8'
 
 repositories {
     mavenCentral()
@@ -39,11 +39,11 @@ dependencies {
             'org.junit.jupiter:junit-jupiter-api:5.1.0',
             'org.slf4j:jul-to-slf4j:1.7.25', // Guava uses java.util.logging
             'ch.qos.logback:logback-classic:1.2.3',
-            'com.google.truth:truth:0.39',
-            'com.google.truth.extensions:truth-java8-extension:0.39',
-            'org.mockito:mockito-core:2.17.0',
+            'com.google.truth:truth:0.40',
+            'com.google.truth.extensions:truth-java8-extension:0.40',
+            'org.mockito:mockito-core:2.18.3',
 
-            'com.h2database:h2:1.4.196',
+            'com.h2database:h2:1.4.197',
             'mysql:mysql-connector-java:5.1.46',
             'org.mariadb.jdbc:mariadb-java-client:2.2.3',
             'org.postgresql:postgresql:42.2.2'
