@@ -268,6 +268,25 @@ TODO: Find better pattern
 * Java 9 Module
 * Testability (mock `Connector`)
 
+```
+fun process(): User {
+    return connector.with {
+        it["id"] = 123
+    }.fetch("select name from user where id = :id", User::class)
+}
+
+@Test
+fun test() {
+    val mock = MockConnector()
+    mock.fetchWhen { param, sql, cls ->
+        User()
+    }
+    mock.fetchVerify { param, sql, cls ->
+        
+    }
+}
+```
+
 
 ## License
 

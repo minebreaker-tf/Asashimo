@@ -8,7 +8,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.16'
+        classpath 'org.jetbrains.dokka:dokka-gradle-plugin:0.9.17'
     }
 }
 
@@ -18,8 +18,8 @@ apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-group = 'rip.deadcode'
-version = '0.2.8'
+group 'rip.deadcode'
+version '0.2.8'
 
 repositories {
     mavenCentral()
@@ -31,7 +31,7 @@ dependencies {
 
             'javax.persistence:javax.persistence-api:2.2',
 
-            'com.google.guava:guava:25.0-jre',
+            'com.google.guava:guava:25.1-jre',
 //            'com.google.code.findbugs:jsr305:3.0.2',
             'org.slf4j:slf4j-api:1.7.25',
     )
@@ -39,13 +39,13 @@ dependencies {
             'org.junit.jupiter:junit-jupiter-api:5.1.0',
             'org.slf4j:jul-to-slf4j:1.7.25', // Guava uses java.util.logging
             'ch.qos.logback:logback-classic:1.2.3',
-            'com.google.truth:truth:0.40',
-            'com.google.truth.extensions:truth-java8-extension:0.40',
+            'com.google.truth:truth:0.41',
+            'com.google.truth.extensions:truth-java8-extension:0.41',
             'org.mockito:mockito-core:2.18.3',
 
             'com.h2database:h2:1.4.197',
             'mysql:mysql-connector-java:5.1.46',
-            'org.mariadb.jdbc:mariadb-java-client:2.2.3',
+            'org.mariadb.jdbc:mariadb-java-client:2.2.5',
             'org.postgresql:postgresql:42.2.2'
     )
     testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
