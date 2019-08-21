@@ -258,6 +258,7 @@ TODO: Find better pattern
 
 * API for Java
 * Fetch interface API
+* Precompiled SQL
 * `fetchAll()` and `fetchStream()` with lazy list, using cursor
 * Upsert support
 * Registry builder
